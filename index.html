@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบติดตามแผนดำเนินงานโครงการ</title>
   
-  <!-- Google Fonts: Prompt Font (300, 400, 500, 600, 700, 800, 900) -->
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&display=swap" rel="stylesheet">
+  <!-- Google Fonts: Sarabun Font (มีหัว) & Plus Jakarta Sans -->
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   
   <!-- FontAwesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -19,7 +19,7 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Prompt', 'sans-serif'],
+            sans: ['Sarabun', 'Plus Jakarta Sans', 'sans-serif'],
           },
           colors: {
             brand: {
@@ -39,7 +39,15 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    body { font-family: 'Prompt', sans-serif !important; }
+    * { font-family: 'Sarabun', 'Plus Jakarta Sans', sans-serif !important; box-sizing: border-box; }
+    
+    body { 
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e0f2fe 100%); 
+      background-attachment: fixed;
+      color: #0f172a; 
+      overflow-x: hidden; 
+      min-height: 100vh;
+    }
     
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -49,7 +57,7 @@
     .light-card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+      box-shadow: 0 2px 4px 0 rgba(15, 23, 42, 0.04);
     }
     
     .bento-card {
@@ -58,47 +66,81 @@
       box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.02);
     }
 
+    /* สไตล์ไฮไลท์กรอบชื่อระบบมุมซ้ายบน */
+    .brand-title-badge {
+      background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+      border: 1.5px solid #bae6fd;
+      box-shadow: 0 2px 8px -2px rgba(2, 132, 199, 0.15);
+    }
+
+    /* สไตล์แท็บเมนูไล่เฉดสีใหม่ให้ดูโดดเด่น */
+    .nav-tab-container {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 3px;
+      border-radius: 14px;
+    }
+
     .nav-btn-active {
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
       color: #ffffff !important;
-      box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
+      box-shadow: 0 3px 10px rgba(2, 132, 199, 0.35) !important;
+      border: 1px solid #38bdf8 !important;
+    }
+
+    .nav-btn-inactive {
+      color: #334155 !important;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+    }
+
+    .nav-btn-inactive:hover {
+      background: #e0f2fe !important;
+      color: #0284c7 !important;
+      border-color: #7dd3fc !important;
     }
 
     .drawer-slide { transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col font-sans antialiased selection:bg-sky-600 selection:text-white">
+<body class="text-slate-800 min-h-screen flex flex-col font-sans antialiased selection:bg-sky-600 selection:text-white">
 
   <!-- TOP HEADER / NAVIGATION -->
   <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
     <div class="w-full px-4 h-16 flex items-center justify-between gap-3 py-2">
       
       <!-- System Title & Main Tabs -->
-      <div class="flex items-center gap-6">
-        <div>
-          <!-- Title สไตล์ Modern Tech Text Gradient (ไม่มีโลโก้) -->
-          <h1 class="font-black text-xl sm:text-2xl bg-gradient-to-r from-slate-950 via-slate-800 to-sky-700 bg-clip-text text-transparent leading-none tracking-tight">
-            ระบบติดตามแผนดำเนินงานโครงการ
-          </h1>
+      <div class="flex items-center gap-4 lg:gap-6">
+        
+        <!-- กรอบไฮไลท์ชื่อระบบมุมซ้ายบน (Modern Tech Highlight Badge) -->
+        <div class="brand-title-badge px-3.5 py-1.5 rounded-xl flex items-center gap-2.5 transition hover:shadow-md">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-600 to-cyan-500 text-white flex items-center justify-center text-sm font-bold shadow-sm">
+            <i class="fa-solid fa-chart-diagram"></i>
+          </div>
+          <div>
+            <h1 class="font-extrabold text-base sm:text-lg bg-gradient-to-r from-slate-950 via-slate-800 to-sky-700 bg-clip-text text-transparent leading-none tracking-tight">
+              ระบบติดตามแผนดำเนินงานโครงการ
+            </h1>
+          </div>
         </div>
 
-        <!-- REORDERED NAVIGATION TABS -->
-        <nav class="hidden md:flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-xl border border-slate-200">
+        <!-- REORDERED & ENHANCED NAVIGATION TABS (3 เมนูหลักปรับสีสันสวยงาม) -->
+        <nav class="hidden md:flex items-center gap-2 nav-tab-container">
           <!-- 1. ติดตามแผนปฏิบัติงาน -->
-          <button id="tab-btn-table" onclick="switchTab('table')" class="tab-btn px-4 py-2 rounded-lg text-sm font-extrabold flex items-center gap-2 transition-all nav-btn-active">
-            <i class="fa-solid fa-list-check"></i>
+          <button id="tab-btn-table" onclick="switchTab('table')" class="tab-btn px-4 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all nav-btn-active">
+            <i class="fa-solid fa-list-check text-sm"></i>
             <span>ติดตามแผนปฏิบัติงาน</span>
           </button>
           
-          <!-- 2. แผนดำเนินงาน (Gantt) -->
-          <button id="tab-btn-gantt" onclick="switchTab('gantt')" class="tab-btn px-4 py-2 rounded-lg text-sm font-extrabold flex items-center gap-2 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60">
-            <i class="fa-solid fa-chart-gantt"></i>
+          <!-- 2. แผนดำเนินงาน -->
+          <button id="tab-btn-gantt" onclick="switchTab('gantt')" class="tab-btn px-4 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all nav-btn-inactive">
+            <i class="fa-solid fa-chart-gantt text-sm text-sky-600"></i>
             <span>แผนดำเนินงาน</span>
           </button>
 
           <!-- 3. รายงานสถิติ BI -->
-          <button id="tab-btn-dash" onclick="switchTab('dash')" class="tab-btn px-4 py-2 rounded-lg text-sm font-extrabold flex items-center gap-2 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60">
-            <i class="fa-solid fa-chart-pie"></i>
+          <button id="tab-btn-dash" onclick="switchTab('dash')" class="tab-btn px-4 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all nav-btn-inactive">
+            <i class="fa-solid fa-chart-pie text-sm text-amber-600"></i>
             <span>รายงานสถิติ BI</span>
           </button>
         </nav>
@@ -231,18 +273,20 @@
           </select>
         </div>
 
-        <!-- MODERN TECH GRADIENT HEADER TABLE -->
+        <!-- MODERN TECH GRADIENT HEADER TABLE WITH UPDATED HEADERS -->
         <div class="overflow-x-auto rounded-lg border border-slate-200 max-h-[75vh]">
           <table class="w-full text-left border-collapse">
             <thead class="sticky top-0 bg-gradient-to-r from-slate-950 via-slate-900 to-sky-950 text-white text-sm uppercase tracking-wider font-extrabold z-10 shadow-sm border-b border-sky-800/40">
               <tr>
                 <th class="py-3 px-2 text-center w-12 border-r border-white/10">#</th>
                 <th class="py-3 px-3 border-r border-white/10 min-w-[280px]">ชื่อโครงการ / ที่ตั้ง</th>
-                <th class="py-3 px-3 border-r border-white/10 min-w-[180px]">งบตั้งไว้ / สัญญา</th>
-                <th class="py-3 px-3 border-r border-white/10 min-w-[180px]">ช่าง / แหล่งเงิน</th>
-                <th class="py-3 px-3 border-r border-white/10 min-w-[220px]">ช่วงเวลาตามแผนงาน / สัญญา</th>
+                <th class="py-3 px-3 border-r border-white/10 min-w-[170px]">งบตั้งไว้ / สัญญา</th>
+                <th class="py-3 px-3 border-r border-white/10 min-w-[170px]">ช่าง / แหล่งเงิน</th>
+                <!-- ปรับแก้หัวข้อให้อยู่บรรทัดเดียวกันตามคำสั่ง -->
+                <th class="py-3 px-3 border-r border-white/10 min-w-[240px] whitespace-nowrap">เวลาตามแผนงาน / สัญญา</th>
                 <th class="py-3 px-3 border-r border-white/10 min-w-[190px]">ขั้นตอนปัจจุบัน</th>
-                <th class="py-3 px-3 text-center w-28 border-r border-white/10">กายภาพ (%)</th>
+                <!-- ปรับเปลี่ยนคำว่า กายภาพ (%) เป็น ความคืบหน้า (%) -->
+                <th class="py-3 px-3 text-center w-32 border-r border-white/10 whitespace-nowrap">ความคืบหน้า (%)</th>
                 <th class="py-3 px-2 text-center w-24 auth-only hidden">จัดการ</th>
               </tr>
             </thead>
@@ -400,7 +444,7 @@
         <div class="light-card rounded-xl p-3.5">
           <h3 class="text-xs font-black text-slate-800 mb-2.5 flex items-center gap-2">
             <i class="fa-solid fa-bars-progress text-sky-600"></i>
-            <span>ความก้าวหน้ากายภาพเฉลี่ย (%) แยกตามหมวด</span>
+            <span>ความคืบหน้าเฉลี่ย (%) แยกตามหมวด</span>
           </h3>
           <div class="h-44">
             <canvas id="chartCategoryProgress"></canvas>
@@ -600,7 +644,7 @@
           <strong>โครงการ:</strong> <span id="lbl_project_name" class="font-black text-slate-900 text-sm me-2">-</span>
         </div>
 
-        <!-- 8 STEPS GRID REORDERED VERTICALLY (1-4 LEFT COLUMN, 5-8 RIGHT COLUMN) -->
+        <!-- 8 STEPS GRID REORDERED VERTICALLY -->
         <div class="space-y-1.5">
           <span class="font-extrabold text-sky-800 block text-xs"><i class="fa-solid fa-square-check me-1"></i>ติ๊กเลือกขั้นตอนที่เรียบร้อยแล้ว (8 ขั้นตอน)</span>
           
@@ -767,7 +811,7 @@
       checkStoredAuthSession();
       updateLiveClock();
 
-      // FAST CLIENT-SIDE CACHE: ดึงข้อมูลจาก LocalStorage ขึ้นโชว์ทันที
+      // FAST CLIENT-SIDE CACHE
       const cachedProjects = localStorage.getItem('PROJECTS_CACHE_DATA');
       if (cachedProjects) {
         try {
@@ -860,7 +904,7 @@
     function switchTab(tabKey) {
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('nav-btn-active');
-        btn.classList.add('text-slate-600');
+        btn.classList.add('nav-btn-inactive');
       });
       document.getElementById(`tab-content-table`).classList.add('hidden');
       document.getElementById(`tab-content-gantt`).classList.add('hidden');
@@ -868,13 +912,15 @@
 
       document.getElementById(`tab-content-${tabKey}`).classList.remove('hidden');
 
-      if (tabKey === 'table') {
-        document.getElementById('tab-btn-table').classList.add('nav-btn-active');
-      } else if (tabKey === 'gantt') {
-        document.getElementById('tab-btn-gantt').classList.add('nav-btn-active');
+      const activeBtn = document.getElementById(`tab-btn-${tabKey}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('nav-btn-inactive');
+        activeBtn.classList.add('nav-btn-active');
+      }
+
+      if (tabKey === 'gantt') {
         renderGanttBoard(true);
       } else if (tabKey === 'dash') {
-        document.getElementById('tab-btn-dash').classList.add('nav-btn-active');
         renderDashboardCharts();
       }
     }
@@ -1048,7 +1094,6 @@
         const result = await res.json();
         allProjectsData = result.data || [];
         
-        // Save to LocalStorage for ultra-fast next load
         localStorage.setItem('PROJECTS_CACHE_DATA', JSON.stringify(allProjectsData));
 
         updateLiveClock();
@@ -1083,7 +1128,6 @@
       document.getElementById('mini_kpi_overdue').innerText = overdue;
     }
 
-    // RENDER STEPS REORDERED VERTICALLY: LEFT COLUMN (1-4), RIGHT COLUMN (5-8)
     function renderStepsCheckboxesVertical() {
       const containerLeft = document.getElementById('stepsContainerLeft');
       const containerRight = document.getElementById('stepsContainerRight');
@@ -1146,7 +1190,7 @@
       }
     }
 
-    /* RENDER TABLE WITH PROMPT FONT (WEIGHT 800 FOR TITLE) */
+    /* RENDER TABLE WITH SARABUN FONT (LOOPED FONT) */
     function renderTable(data) {
       const tbody = document.getElementById('projectTableBody');
       if (!data || data.length === 0) {
@@ -1202,7 +1246,6 @@
         html += `<tr class="cursor-pointer border-b border-slate-200 transition ${rowBg}" onclick="viewProjectSummaryById('${item.id}')">
           <td class="py-2.5 px-2 text-center font-black text-slate-600 border-r border-slate-200 text-sm">${rowNumber}</td>
           
-          <!-- ชื่อโครงการ: ใช้ PROMPT FONT WEIGHT 800 (ExtraBold) โดดเด่นอ่านง่าย -->
           <td class="py-2.5 px-3 border-r border-slate-200">
             <div class="font-extrabold text-slate-900 text-sm leading-snug tracking-normal">${item.project_name}</div>
             <div class="text-xs text-slate-600 font-medium mt-1 flex items-center gap-1">
@@ -1211,13 +1254,11 @@
             </div>
           </td>
 
-          <!-- คอลัมน์ 3: งบตั้งไว้ / สัญญา -->
           <td class="py-2.5 px-3 border-r border-slate-200 whitespace-nowrap">
             <div class="text-xs text-slate-800 leading-tight">ตั้งไว้: <strong class="text-sky-700 font-black text-sm">${Number(item.budget_amount||0).toLocaleString('th-TH')} ฿</strong></div>
             <div class="text-xs text-slate-600 leading-tight mt-1">สัญญา: <strong class="text-slate-900 font-bold">${item.approved_amount ? Number(item.approved_amount).toLocaleString('th-TH') + ' ฿' : '-'}</strong></div>
           </td>
 
-          <!-- คอลัมน์ 4 (สร้างใหม่): ช่าง / แหล่งเงิน -->
           <td class="py-2.5 px-3 border-r border-slate-200 whitespace-nowrap">
             <div class="flex flex-col gap-1 items-start">
               <span class="px-2.5 py-0.5 rounded text-xs font-extrabold shadow-sm" style="background-color: ${officerStyle.bg}; color: ${officerStyle.text}">
@@ -1330,7 +1371,7 @@
 
           <div>
             <div class="flex justify-between mb-1">
-              <span class="font-bold text-slate-800 text-xs">ความก้าวหน้าทางกายภาพ</span>
+              <span class="font-bold text-slate-800 text-xs">ความคืบหน้า</span>
               <span class="font-extrabold text-sky-700 text-xs">${physPct}%</span>
             </div>
             <div class="w-full bg-slate-100 rounded-full h-3.5 border border-slate-300 overflow-hidden">
@@ -1379,7 +1420,7 @@
       document.getElementById('summaryModal').classList.add('hidden');
     }
 
-    /* EXECUTIVE BI ANALYTICS (FULL COMPREHENSIVE CHARTS) */
+    /* EXECUTIVE BI ANALYTICS */
     function renderDashboardCharts() {
       if (!allProjectsData || allProjectsData.length === 0) return;
 
@@ -1438,7 +1479,7 @@
       document.getElementById('dash_disbursed_budget').innerText = disB.toLocaleString('th-TH') + ' ฿';
       document.getElementById('dash_savings_budget').innerText = savB.toLocaleString('th-TH') + ' ฿';
 
-      Chart.defaults.font.family = "'Prompt', sans-serif";
+      Chart.defaults.font.family = "'Sarabun', sans-serif";
       Chart.defaults.color = '#334155';
       Chart.defaults.borderColor = '#e2e8f0';
 
@@ -1488,7 +1529,7 @@
         type: 'bar',
         data: {
           labels: catLabels,
-          datasets: [{ label: 'ความก้าวหน้าเฉลี่ย (%)', data: catAvgProgress, backgroundColor: '#0284c7' }]
+          datasets: [{ label: 'ความคืบหน้าเฉลี่ย (%)', data: catAvgProgress, backgroundColor: '#0284c7' }]
         },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } }
       });
@@ -1621,7 +1662,7 @@
       let csvStr = "\uFEFF";
 
       if (mode === 'FULL') {
-        csvStr += "ลำดับ,ID โครงการ,ปีงบประมาณ,ไตรมาส,ชื่อโครงการ,รายละเอียดกิจกรรม,งาน,งบรายจ่าย,หมวดรายจ่าย,ประเภทรายจ่าย,แหล่งเงิน,หมู่ที่,ชื่อหมู่บ้าน,ช่างรับผิดชอบ,ผู้รับจ้าง,งบตั้งไว้,วงเงินสัญญา,เริ่มแผน (วัน/เดือน/ปี พ.ศ.),สิ้นสุดแผน (วัน/เดือน/ปี พ.ศ.),ขั้นตอนปัจจุบัน,กายภาพ (%)\n";
+        csvStr += "ลำดับ,ID โครงการ,ปีงบประมาณ,ไตรมาส,ชื่อโครงการ,รายละเอียดกิจกรรม,งาน,งบรายจ่าย,หมวดรายจ่าย,ประเภทรายจ่าย,แหล่งเงิน,หมู่ที่,ชื่อหมู่บ้าน,ช่างรับผิดชอบ,ผู้รับจ้าง,งบตั้งไว้,วงเงินสัญญา,เริ่มแผน (วัน/เดือน/ปี พ.ศ.),สิ้นสุดแผน (วัน/เดือน/ปี พ.ศ.),ขั้นตอนปัจจุบัน,ความคืบหน้า (%)\n";
         
         allProjectsData.forEach((p, idx) => {
           const detailEscaped = p.activity_detail ? p.activity_detail.replace(/"/g, '""') : '-';
