@@ -76,8 +76,10 @@
       <!-- System Title & Main Tabs -->
       <div class="flex items-center gap-6">
         <div>
-          <!-- ฟอนต์ Prompt แบบ Black (Weight 900) หนาเด่นชัดตรงตามแบบภาพ -->
-          <h1 class="font-black text-xl sm:text-2xl text-slate-900 leading-none tracking-tight">ระบบติดตามแผนดำเนินงานโครงการ</h1>
+          <!-- Title สไตล์ Modern Tech Text Gradient (ไม่มีโลโก้) -->
+          <h1 class="font-black text-xl sm:text-2xl bg-gradient-to-r from-slate-950 via-slate-800 to-sky-700 bg-clip-text text-transparent leading-none tracking-tight">
+            ระบบติดตามแผนดำเนินงานโครงการ
+          </h1>
         </div>
 
         <!-- REORDERED NAVIGATION TABS -->
@@ -229,18 +231,18 @@
           </select>
         </div>
 
-        <!-- NEW SEPARATED TABLE WITH PROMPT FONT (WEIGHT 800 FOR TITLE) -->
+        <!-- MODERN TECH GRADIENT HEADER TABLE -->
         <div class="overflow-x-auto rounded-lg border border-slate-200 max-h-[75vh]">
           <table class="w-full text-left border-collapse">
-            <thead class="sticky top-0 bg-slate-900 text-white text-sm uppercase tracking-wider font-extrabold z-10">
+            <thead class="sticky top-0 bg-gradient-to-r from-slate-950 via-slate-900 to-sky-950 text-white text-sm uppercase tracking-wider font-extrabold z-10 shadow-sm border-b border-sky-800/40">
               <tr>
-                <th class="py-3 px-2 text-center w-12 border-r border-slate-800">#</th>
-                <th class="py-3 px-3 border-r border-slate-800 min-w-[280px]">ชื่อโครงการ / ที่ตั้ง</th>
-                <th class="py-3 px-3 border-r border-slate-800 min-w-[180px]">งบตั้งไว้ / สัญญา</th>
-                <th class="py-3 px-3 border-r border-slate-800 min-w-[180px]">ช่าง / แหล่งเงิน</th>
-                <th class="py-3 px-3 border-r border-slate-800 min-w-[220px]">ช่วงเวลาตามแผนงาน / สัญญา</th>
-                <th class="py-3 px-3 border-r border-slate-800 min-w-[190px]">ขั้นตอนปัจจุบัน</th>
-                <th class="py-3 px-3 text-center w-28 border-r border-slate-800">กายภาพ (%)</th>
+                <th class="py-3 px-2 text-center w-12 border-r border-white/10">#</th>
+                <th class="py-3 px-3 border-r border-white/10 min-w-[280px]">ชื่อโครงการ / ที่ตั้ง</th>
+                <th class="py-3 px-3 border-r border-white/10 min-w-[180px]">งบตั้งไว้ / สัญญา</th>
+                <th class="py-3 px-3 border-r border-white/10 min-w-[180px]">ช่าง / แหล่งเงิน</th>
+                <th class="py-3 px-3 border-r border-white/10 min-w-[220px]">ช่วงเวลาตามแผนงาน / สัญญา</th>
+                <th class="py-3 px-3 border-r border-white/10 min-w-[190px]">ขั้นตอนปัจจุบัน</th>
+                <th class="py-3 px-3 text-center w-28 border-r border-white/10">กายภาพ (%)</th>
                 <th class="py-3 px-2 text-center w-24 auth-only hidden">จัดการ</th>
               </tr>
             </thead>
@@ -284,33 +286,33 @@
 
         <div class="overflow-x-auto rounded-lg border border-slate-200 max-h-[75vh]">
           <table class="w-full text-center border-collapse text-xs" id="ganttTable">
-            <thead class="sticky top-0 bg-slate-900 text-white font-extrabold z-10">
+            <thead class="sticky top-0 bg-gradient-to-r from-slate-950 via-slate-900 to-sky-950 text-white font-extrabold z-10">
               <tr>
-                <th rowspan="2" class="p-2 border-r border-slate-700 w-10">#</th>
-                <th rowspan="2" class="p-2 border-r border-slate-700 text-left min-w-[250px]">ชื่อโครงการ</th>
-                <th rowspan="2" class="p-2 border-r border-slate-700 w-24">ไตรมาส</th>
-                <th rowspan="2" class="p-2 border-r border-slate-700 w-32">แหล่งเงิน</th>
-                <th rowspan="2" class="p-2 border-r border-slate-700 w-28">งบประมาณ</th>
-                <th rowspan="2" class="p-2 border-r border-slate-700 w-12">หมู่</th>
-                <th rowspan="2" class="p-2 border-r border-slate-700 w-24">หมู่บ้าน</th>
-                <th rowspan="2" class="p-2 border-r border-slate-700 w-24">ช่าง</th>
-                <th colspan="2" class="p-1 border-r border-slate-700">แผนงาน</th>
-                <th colspan="12" class="p-1 bg-slate-800">เดือน (ปีงบประมาณ)</th>
+                <th rowspan="2" class="p-2 border-r border-white/10 w-10">#</th>
+                <th rowspan="2" class="p-2 border-r border-white/10 text-left min-w-[250px]">ชื่อโครงการ</th>
+                <th rowspan="2" class="p-2 border-r border-white/10 w-24">ไตรมาส</th>
+                <th rowspan="2" class="p-2 border-r border-white/10 w-32">แหล่งเงิน</th>
+                <th rowspan="2" class="p-2 border-r border-white/10 w-28">งบประมาณ</th>
+                <th rowspan="2" class="p-2 border-r border-white/10 w-12">หมู่</th>
+                <th rowspan="2" class="p-2 border-r border-white/10 w-24">หมู่บ้าน</th>
+                <th rowspan="2" class="p-2 border-r border-white/10 w-24">ช่าง</th>
+                <th colspan="2" class="p-1 border-r border-white/10">แผนงาน</th>
+                <th colspan="12" class="p-1 bg-slate-900/80">เดือน (ปีงบประมาณ)</th>
               </tr>
               <tr class="text-xs">
-                <th class="p-1.5 border-r border-slate-700 w-24">วันเริ่ม</th>
-                <th class="p-1.5 border-r border-slate-700 w-24">วันสิ้นสุด</th>
-                <th class="w-7 p-1 bg-amber-600 text-white border-r border-slate-700">ต.ค.</th>
-                <th class="w-7 p-1 bg-amber-600 text-white border-r border-slate-700">พ.ย.</th>
-                <th class="w-7 p-1 bg-amber-600 text-white border-r border-slate-700">ธ.ค.</th>
-                <th class="w-7 p-1 bg-sky-600 text-white border-r border-slate-700">ม.ค.</th>
-                <th class="w-7 p-1 bg-sky-600 text-white border-r border-slate-700">ก.พ.</th>
-                <th class="w-7 p-1 bg-sky-600 text-white border-r border-slate-700">มี.ค.</th>
-                <th class="w-7 p-1 bg-emerald-600 text-white border-r border-slate-700">เม.ย.</th>
-                <th class="w-7 p-1 bg-emerald-600 text-white border-r border-slate-700">พ.ค.</th>
-                <th class="w-7 p-1 bg-emerald-600 text-white border-r border-slate-700">มิ.ย.</th>
-                <th class="w-7 p-1 bg-indigo-600 text-white border-r border-slate-700">ก.ค.</th>
-                <th class="w-7 p-1 bg-indigo-600 text-white border-r border-slate-700">ส.ค.</th>
+                <th class="p-1.5 border-r border-white/10 w-24">วันเริ่ม</th>
+                <th class="p-1.5 border-r border-white/10 w-24">วันสิ้นสุด</th>
+                <th class="w-7 p-1 bg-amber-600 text-white border-r border-white/10">ต.ค.</th>
+                <th class="w-7 p-1 bg-amber-600 text-white border-r border-white/10">พ.ย.</th>
+                <th class="w-7 p-1 bg-amber-600 text-white border-r border-white/10">ธ.ค.</th>
+                <th class="w-7 p-1 bg-sky-600 text-white border-r border-white/10">ม.ค.</th>
+                <th class="w-7 p-1 bg-sky-600 text-white border-r border-white/10">ก.พ.</th>
+                <th class="w-7 p-1 bg-sky-600 text-white border-r border-white/10">มี.ค.</th>
+                <th class="w-7 p-1 bg-emerald-600 text-white border-r border-white/10">เม.ย.</th>
+                <th class="w-7 p-1 bg-emerald-600 text-white border-r border-white/10">พ.ค.</th>
+                <th class="w-7 p-1 bg-emerald-600 text-white border-r border-white/10">มิ.ย.</th>
+                <th class="w-7 p-1 bg-indigo-600 text-white border-r border-white/10">ก.ค.</th>
+                <th class="w-7 p-1 bg-indigo-600 text-white border-r border-white/10">ส.ค.</th>
                 <th class="w-7 p-1 bg-indigo-600 text-white">ก.ย.</th>
               </tr>
             </thead>
@@ -580,7 +582,7 @@
     </div>
   </div>
 
-  <!-- PROGRESS & FILE MANAGEMENT MODAL (PROMPT FONT VERTICAL ORDERING 1-4 LEFT / 5-8 RIGHT) -->
+  <!-- PROGRESS & FILE MANAGEMENT MODAL -->
   <div id="progressModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
     <div class="light-card rounded-2xl max-w-2xl w-full p-5 space-y-3.5 my-6 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
@@ -623,7 +625,7 @@
           </div>
         </div>
 
-        <!-- CONDITIONAL DRIVE PDF UPLOAD SECTION (HIDDEN BY DEFAULT) -->
+        <!-- CONDITIONAL DRIVE PDF UPLOAD SECTION -->
         <div id="driveUploadSection" class="hidden p-3 bg-emerald-50/80 border border-emerald-300 rounded-xl space-y-2">
           <div class="flex items-center justify-between">
             <span class="font-extrabold text-emerald-900 block text-xs"><i class="fa-solid fa-file-pdf me-1 text-rose-600"></i>จัดเก็บไฟล์โครงการ PDF (บังคับแนบเมื่อตรวจรับงานเรียบร้อย)</span>
@@ -776,7 +778,7 @@
       }
 
       loadMasterData();
-      loadProjects(false); // แอบโหลดข้อมูลสดในเบื้องหลัง
+      loadProjects(false);
       renderStepsCheckboxesVertical();
     };
 
@@ -1158,7 +1160,6 @@
         const physPct = Number(item.physical_progress || 0);
         const evalRes = evaluateSmartDelayStatus(item);
 
-        // Exclusive row background highlight: Only Completed (Green) and Overdue (Red)
         let rowBg = "hover:bg-slate-50";
         if (evalRes.isCompleted) rowBg = "bg-emerald-50/50 hover:bg-emerald-50/80";
         else if (evalRes.isOverdue) rowBg = "bg-rose-50/50 hover:bg-rose-50/80";
@@ -1798,7 +1799,6 @@
       const chk7 = document.getElementById('step_7');
       const chk8 = document.getElementById('step_8');
 
-      // VALIDATION GUARD STEP 7 & 8 DATES
       if (chk7 && chk7.checked) {
         const step7Date = document.getElementById('step_7_date').value;
         if (!step7Date) {
