@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบติดตามแผนดำเนินงานโครงการ</title>
   
+  <!-- Google Fonts: Prompt Font (300, 400, 500, 600, 700, 800, 900) -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -13,7 +19,7 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Noto Sans Thai"', 'Prompt', 'Inter', 'sans-serif'],
+            sans: ['Prompt', 'sans-serif'],
           },
           colors: {
             brand: {
@@ -28,16 +34,12 @@
       }
     }
   </script>
-
-  <!-- Google Fonts & FontAwesome -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    body { font-family: 'Noto Sans Thai', 'Prompt', 'Inter', sans-serif; }
+    body { font-family: 'Prompt', sans-serif !important; }
     
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -74,7 +76,7 @@
       <!-- System Title & Main Tabs -->
       <div class="flex items-center gap-6">
         <div>
-          <!-- เอา Smart Project Tracker และไอคอนออก แสดงเฉพาะชื่อระบบขนาดใหญ่โดดเด่น -->
+          <!-- ฟอนต์ Prompt แบบ Black (Weight 900) หนาเด่นชัดตรงตามแบบภาพ -->
           <h1 class="font-black text-xl sm:text-2xl text-slate-900 leading-none tracking-tight">ระบบติดตามแผนดำเนินงานโครงการ</h1>
         </div>
 
@@ -227,16 +229,14 @@
           </select>
         </div>
 
-        <!-- NEW SEPARATED TABLE WITH INCREASED FONT SIZE & BALANCED COLUMNS -->
+        <!-- NEW SEPARATED TABLE WITH PROMPT FONT (WEIGHT 800 FOR TITLE) -->
         <div class="overflow-x-auto rounded-lg border border-slate-200 max-h-[75vh]">
           <table class="w-full text-left border-collapse">
             <thead class="sticky top-0 bg-slate-900 text-white text-sm uppercase tracking-wider font-extrabold z-10">
               <tr>
                 <th class="py-3 px-2 text-center w-12 border-r border-slate-800">#</th>
                 <th class="py-3 px-3 border-r border-slate-800 min-w-[280px]">ชื่อโครงการ / ที่ตั้ง</th>
-                <!-- แยกงบตั้งไว้ / สัญญา ออกมาอยู่อีกคอลัมน์ -->
                 <th class="py-3 px-3 border-r border-slate-800 min-w-[180px]">งบตั้งไว้ / สัญญา</th>
-                <!-- คอลัมน์สร้างใหม่: ช่างผู้รับผิดชอบ / แหล่งเงิน -->
                 <th class="py-3 px-3 border-r border-slate-800 min-w-[180px]">ช่าง / แหล่งเงิน</th>
                 <th class="py-3 px-3 border-r border-slate-800 min-w-[220px]">ช่วงเวลาตามแผนงาน / สัญญา</th>
                 <th class="py-3 px-3 border-r border-slate-800 min-w-[190px]">ขั้นตอนปัจจุบัน</th>
@@ -580,7 +580,7 @@
     </div>
   </div>
 
-  <!-- PROGRESS & FILE MANAGEMENT MODAL (VERTICAL ORDERING 1-4 LEFT / 5-8 RIGHT) -->
+  <!-- PROGRESS & FILE MANAGEMENT MODAL (PROMPT FONT VERTICAL ORDERING 1-4 LEFT / 5-8 RIGHT) -->
   <div id="progressModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
     <div class="light-card rounded-2xl max-w-2xl w-full p-5 space-y-3.5 my-6 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
@@ -1144,7 +1144,7 @@
       }
     }
 
-    /* RENDER TABLE WITH SEPARATED COLUMNS & HIGHER FONT CONTRAST */
+    /* RENDER TABLE WITH PROMPT FONT (WEIGHT 800 FOR TITLE) */
     function renderTable(data) {
       const tbody = document.getElementById('projectTableBody');
       if (!data || data.length === 0) {
@@ -1201,9 +1201,10 @@
         html += `<tr class="cursor-pointer border-b border-slate-200 transition ${rowBg}" onclick="viewProjectSummaryById('${item.id}')">
           <td class="py-2.5 px-2 text-center font-black text-slate-600 border-r border-slate-200 text-sm">${rowNumber}</td>
           
+          <!-- ชื่อโครงการ: ใช้ PROMPT FONT WEIGHT 800 (ExtraBold) โดดเด่นอ่านง่าย -->
           <td class="py-2.5 px-3 border-r border-slate-200">
-            <div class="font-extrabold text-slate-900 text-sm leading-snug">${item.project_name}</div>
-            <div class="text-xs text-slate-600 font-bold mt-0.5 flex items-center gap-1">
+            <div class="font-extrabold text-slate-900 text-sm leading-snug tracking-normal">${item.project_name}</div>
+            <div class="text-xs text-slate-600 font-medium mt-1 flex items-center gap-1">
               <i class="fa-solid fa-location-dot text-rose-600 text-xs"></i>
               <span>หมู่ ${item.moo_no} ${item.village_name}</span>
             </div>
@@ -1436,6 +1437,7 @@
       document.getElementById('dash_disbursed_budget').innerText = disB.toLocaleString('th-TH') + ' ฿';
       document.getElementById('dash_savings_budget').innerText = savB.toLocaleString('th-TH') + ' ฿';
 
+      Chart.defaults.font.family = "'Prompt', sans-serif";
       Chart.defaults.color = '#334155';
       Chart.defaults.borderColor = '#e2e8f0';
 
