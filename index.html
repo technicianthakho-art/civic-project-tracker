@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full bg-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Project Tracker - ระบบบริหารติดตามโครงการ</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans Thai"', 'Prompt', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & FontAwesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body { font-family: 'Noto Sans Thai', 'Prompt', 'Inter', sans-serif; }
+    
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0284c7; }
+
+    .light-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+    }
+    
+    .bento-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+    }
+
+    .drawer-slide { transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col font-sans antialiased selection:bg-sky-600 selection:text-white">
+
+  <!-- TOP HEADER / NAVIGATION -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <div class="w-full px-4 h-16 flex items-center justify-between gap-3 py-2">
+      
+      <!-- Brand Logo & Main Tabs -->
+      <div class="flex items-center gap-5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-md">
+            <i class="fa-solid fa-layer-group text-lg"></i>
+          </div>
+          <div>
+            <h1 class="font-black text-base md:text-lg text-slate-900 leading-tight">Smart Project Tracker</h1>
+            <p class="text-xs text-sky-700 font-bold tracking-tight uppercase">Executive Management Board</p>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="hidden md:flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <button id="tab-btn-table" onclick="switchTab('table')" class="tab-btn px-3.5 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all bg-sky-600 text-white shadow-sm">
+            <i class="fa-solid fa-list-check"></i>
+            <span>ติดตามแผนปฏิบัติงาน</span>
+          </button>
+          <button id="tab-btn-dash" onclick="switchTab('dash')" class="tab-btn px-3.5 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>รายงานสถิติ BI</span>
+          </button>
+          <button id="tab-btn-gantt" onclick="switchTab('gantt')" class="tab-btn px-3.5 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60">
+            <i class="fa-solid fa-chart-gantt"></i>
+            <span>แผนดำเนินงาน (Gantt)</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Action Tools & Status -->
+      <div class="flex items-center gap-2.5">
+        <div id="liveClock" class="hidden lg:flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+          <i class="fa-regular fa-clock text-sky-600"></i>
+          <span>อัปเดต: -</span>
+        </div>
+
+        <button onclick="loadProjects()" class="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-1.5 border border-slate-300 shadow-sm transition">
+          <i class="fa-solid fa-rotate text-sky-600"></i>
+          <span class="hidden sm:inline">รีเฟรช</span>
+        </button>
+
+        <div class="relative group">
+          <button class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+            <i class="fa-solid fa-file-csv"></i>
+            <span class="hidden sm:inline">ส่งออก CSV</span>
+            <i class="fa-solid fa-chevron-down text-[10px] opacity-75"></i>
+          </button>
+          <div class="absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 hidden group-hover:block z-50">
+            <button onclick="exportCSV('FULL')" class="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg flex items-center gap-2">
+              <i class="fa-solid fa-table text-sky-600"></i>
+              <span>1. ข้อมูลเดิมทั้งหมด</span>
+            </button>
+            <button onclick="exportCSV('GANTT')" class="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg flex items-center gap-2">
+              <i class="fa-solid fa-chart-gantt text-emerald-600"></i>
+              <span>2. เฉพาะแผน Gantt</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- AUTH LOGIN BUTTON -->
+        <button id="authBtn" onclick="openLoginModal()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-white rounded-lg text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span id="authBtnText">เข้าสู่ระบบ</span>
+        </button>
+
+        <button id="btnAddProject" onclick="openInitialFormModal()" class="admin-only hidden px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+          <i class="fa-solid fa-plus"></i>
+          <span>เพิ่มโครงการ</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 w-full px-3 py-3 space-y-3">
+
+    <!-- TAB 1: DATA TABLE VIEW -->
+    <section id="tab-content-table" class="space-y-3">
+      
+      <!-- COMPACT KPI RIBBON -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div onclick="filterByCard('ALL')" class="bento-card rounded-xl p-3 cursor-pointer transition hover:border-sky-400 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-sm font-bold">
+              <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <span class="text-xs font-bold text-slate-700">โครงการทั้งหมด</span>
+          </div>
+          <span id="mini_kpi_total" class="text-xl font-black text-slate-900">0</span>
+        </div>
+
+        <div onclick="filterByCard('ACTIVE')" class="bento-card rounded-xl p-3 cursor-pointer transition hover:border-amber-400 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold">
+              <i class="fa-solid fa-spinner"></i>
+            </div>
+            <span class="text-xs font-bold text-slate-700">อยู่ระหว่างดำเนินการ</span>
+          </div>
+          <span id="mini_kpi_active" class="text-xl font-black text-slate-900">0</span>
+        </div>
+
+        <div onclick="filterByCard('COMPLETED')" class="bento-card rounded-xl p-3 cursor-pointer transition hover:border-emerald-400 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <span class="text-xs font-bold text-slate-700">แล้วเสร็จสมบูรณ์</span>
+          </div>
+          <span id="mini_kpi_completed" class="text-xl font-black text-slate-900">0</span>
+        </div>
+
+        <div onclick="filterByCard('OVERDUE')" class="bento-card rounded-xl p-3 cursor-pointer transition hover:border-rose-400 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-sm font-bold">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <span class="text-xs font-bold text-slate-700">เกินกำหนดเวลา</span>
+          </div>
+          <span id="mini_kpi_overdue" class="text-xl font-black text-slate-900">0</span>
+        </div>
+      </div>
+
+      <!-- MAIN TABLE CONTAINER -->
+      <div class="light-card rounded-xl p-3 space-y-3">
+        
+        <!-- Filters Toolbar -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
+          <div class="lg:col-span-2 relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="ค้นหาชื่อโครงการ, หมู่บ้าน, ช่าง..." class="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-600 focus:bg-white transition">
+          </div>
+
+          <select id="filterFiscalYear" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-bold focus:outline-none focus:border-sky-600">
+            <option value="">-- ทุกปีงบประมาณ --</option>
+            <option value="2568">ปีงบประมาณ 2568</option>
+            <option value="2569">ปีงบประมาณ 2569</option>
+            <option value="2570" selected>ปีงบประมาณ 2570</option>
+          </select>
+
+          <select id="filterOfficer" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-bold focus:outline-none focus:border-sky-600">
+            <option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>
+          </select>
+
+          <select id="filterBudgetCategory" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-bold focus:outline-none focus:border-sky-600">
+            <option value="">-- ทุกหมวดรายจ่าย --</option>
+          </select>
+
+          <select id="filterStatus" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-bold focus:outline-none focus:border-sky-600">
+            <option value="">-- ทุกสถานะความก้าวหน้า --</option>
+            <option value="ACTIVE">🟡 อยู่ระหว่างดำเนินการ</option>
+            <option value="OVERDUE">🟠 เกินระยะเวลาตามแผนงาน</option>
+            <option value="CONTRACT">🔵 อยู่ในห้วงระยะเวลาตามสัญญา</option>
+            <option value="COMPLETED">🟢 แล้วเสร็จสมบูรณ์ (100%)</option>
+          </select>
+        </div>
+
+        <!-- READABLE MODERN TABLE -->
+        <div class="overflow-x-auto rounded-lg border border-slate-200 max-h-[75vh]">
+          <table class="w-full text-left border-collapse">
+            <thead class="sticky top-0 bg-slate-900 text-white text-xs uppercase tracking-wider font-bold z-10">
+              <tr>
+                <th class="py-3 px-3 text-center w-12 border-r border-slate-800">#</th>
+                <th class="py-3 px-3 border-r border-slate-800 min-w-[300px]">ชื่อโครงการ / ที่ตั้ง</th>
+                <th class="py-3 px-3 border-r border-slate-800 min-w-[240px]">งบตั้งไว้ / สัญญา / ช่าง / แหล่งเงิน</th>
+                <th class="py-3 px-3 border-r border-slate-800 min-w-[220px]">ช่วงเวลาตามแผนงาน / สัญญา</th>
+                <th class="py-3 px-3 border-r border-slate-800 min-w-[200px]">ขั้นตอนปัจจุบัน</th>
+                <th class="py-3 px-3 text-center w-28 border-r border-slate-800">กายภาพ (%)</th>
+                <th class="py-3 px-3 text-center w-24 auth-only hidden">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="projectTableBody" class="divide-y divide-slate-200 text-sm bg-white">
+              <tr>
+                <td colspan="7" class="py-12 text-center text-slate-400 font-bold">
+                  <i class="fa-solid fa-circle-notch fa-spin text-2xl me-2 text-sky-600"></i>กำลังโหลดข้อมูลโครงการ...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 2: EXECUTIVE BI DASHBOARD -->
+    <section id="tab-content-dash" class="hidden space-y-3">
+      
+      <div class="light-card rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-l-4 border-l-sky-600 bg-white">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie text-sky-600 text-lg"></i>
+          <h2 class="font-extrabold text-sm sm:text-base text-slate-900">Executive Dashboard Analytics</h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-600 font-bold">ปีงบประมาณ:</span>
+          <select id="dashFilterFiscalYear" onchange="renderDashboardCharts()" class="bg-slate-50 border border-slate-300 text-xs text-sky-700 font-bold rounded-lg px-2.5 py-1 focus:outline-none">
+            <option value="">-- ทุกปีงบประมาณ --</option>
+            <option value="2568">2568</option>
+            <option value="2569">2569</option>
+            <option value="2570" selected>2570</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Financial Metrics Grid -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bento-card rounded-xl p-3.5 border-l-4 border-l-sky-600">
+          <span class="text-xs text-slate-500 font-bold block">งบประมาณรวมตั้งไว้</span>
+          <p id="dash_total_budget" class="text-lg sm:text-xl font-black text-sky-800 mt-1">0 ฿</p>
+        </div>
+        <div class="bento-card rounded-xl p-3.5 border-l-4 border-l-indigo-600">
+          <span class="text-xs text-slate-500 font-bold block">วงเงินสัญญาจัดซื้อจัดจ้าง</span>
+          <p id="dash_approved_budget" class="text-lg sm:text-xl font-black text-indigo-800 mt-1">0 ฿</p>
+        </div>
+        <div class="bento-card rounded-xl p-3.5 border-l-4 border-l-emerald-600">
+          <span class="text-xs text-slate-500 font-bold block">เบิกจ่ายแล้วสะสม</span>
+          <p id="dash_disbursed_budget" class="text-lg sm:text-xl font-black text-emerald-800 mt-1">0 ฿</p>
+        </div>
+        <div class="bento-card rounded-xl p-3.5 border-l-4 border-l-amber-600">
+          <span class="text-xs text-slate-500 font-bold block">เงินประหยัดได้ (คืนงบกลาง)</span>
+          <p id="dash_savings_budget" class="text-lg sm:text-xl font-black text-amber-800 mt-1">0 ฿</p>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <div class="light-card rounded-xl p-4 lg:col-span-2">
+          <h3 class="text-xs font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-chart-line text-sky-600"></i>
+            <span>แนวโน้มผลเบิกจ่ายงบประมาณสะสม (รายเดือน)</span>
+          </h3>
+          <div class="h-52">
+            <canvas id="chartMonthlyTrend"></canvas>
+          </div>
+        </div>
+
+        <div class="light-card rounded-xl p-4">
+          <h3 class="text-xs font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-sky-600"></i>
+            <span>สัดส่วนสถานะโครงการ</span>
+          </h3>
+          <div class="h-52">
+            <canvas id="chartHealthDonut"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB 3: GANTT CHART BOARD -->
+    <section id="tab-content-gantt" class="hidden space-y-3">
+      <div class="light-card rounded-xl p-3 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h2 class="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-calendar-days text-sky-600"></i>
+            <span>ตารางบริหารและวางแผนดำเนินงานโครงการ (Gantt Chart)</span>
+          </h2>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="sortGanttBoard()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+              <i class="fa-solid fa-arrow-down-short-wide"></i>
+              <span>จัดเรียงตามวัน</span>
+            </button>
+            <select id="ganttFilterFunding" onchange="renderGanttBoard(false)" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-sky-700 font-bold focus:outline-none">
+              <option value="">-- ทุกแหล่งเงิน --</option>
+            </select>
+            <select id="ganttFilterFy" onchange="renderGanttBoard(false)" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-sky-700 font-bold focus:outline-none">
+              <option value="">-- ทุกปีงบประมาณ --</option>
+              <option value="2568">2568</option>
+              <option value="2569">2569</option>
+              <option value="2570" selected>2570</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-slate-200 max-h-[75vh]">
+          <table class="w-full text-center border-collapse text-xs" id="ganttTable">
+            <thead class="sticky top-0 bg-slate-900 text-white font-bold z-10">
+              <tr>
+                <th rowspan="2" class="p-2 border-r border-slate-700 w-10">#</th>
+                <th rowspan="2" class="p-2 border-r border-slate-700 text-left min-w-[240px]">ชื่อโครงการ</th>
+                <th rowspan="2" class="p-2 border-r border-slate-700 w-20">ไตรมาส</th>
+                <th rowspan="2" class="p-2 border-r border-slate-700 w-32">แหล่งเงิน</th>
+                <th rowspan="2" class="p-2 border-r border-slate-700 w-24">งบประมาณ</th>
+                <th rowspan="2" class="p-2 border-r border-slate-700 w-10">หมู่</th>
+                <th rowspan="2" class="p-2 border-r border-slate-700 w-20">หมู่บ้าน</th>
+                <th rowspan="2" class="p-2 border-r border-slate-700 w-20">ช่าง</th>
+                <th colspan="2" class="p-1 border-r border-slate-700">แผนงาน</th>
+                <th colspan="12" class="p-1 bg-slate-800">เดือน (ปีงบประมาณ)</th>
+              </tr>
+              <tr class="text-[11px]">
+                <th class="p-1.5 border-r border-slate-700 w-24">วันเริ่ม</th>
+                <th class="p-1.5 border-r border-slate-700 w-24">วันสิ้นสุด</th>
+                <th class="w-7 p-1 bg-amber-600 text-white border-r border-slate-700">ต.ค.</th>
+                <th class="w-7 p-1 bg-amber-600 text-white border-r border-slate-700">พ.ย.</th>
+                <th class="w-7 p-1 bg-amber-600 text-white border-r border-slate-700">ธ.ค.</th>
+                <th class="w-7 p-1 bg-sky-600 text-white border-r border-slate-700">ม.ค.</th>
+                <th class="w-7 p-1 bg-sky-600 text-white border-r border-slate-700">ก.พ.</th>
+                <th class="w-7 p-1 bg-sky-600 text-white border-r border-slate-700">มี.ค.</th>
+                <th class="w-7 p-1 bg-emerald-600 text-white border-r border-slate-700">เม.ย.</th>
+                <th class="w-7 p-1 bg-emerald-600 text-white border-r border-slate-700">พ.ค.</th>
+                <th class="w-7 p-1 bg-emerald-600 text-white border-r border-slate-700">มิ.ย.</th>
+                <th class="w-7 p-1 bg-indigo-600 text-white border-r border-slate-700">ก.ค.</th>
+                <th class="w-7 p-1 bg-indigo-600 text-white border-r border-slate-700">ส.ค.</th>
+                <th class="w-7 p-1 bg-indigo-600 text-white">ก.ย.</th>
+              </tr>
+            </thead>
+            <tbody id="ganttTableBody" class="divide-y divide-slate-200 bg-white">
+              <tr><td colspan="22" class="p-8 text-center text-slate-400 font-bold">กำลังโหลดแผนดำเนินงาน...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- AUTHENTICATION LOGIN MODAL -->
+  <div id="loginModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="light-card rounded-2xl max-w-sm w-full p-5 shadow-2xl text-center space-y-4">
+      <div class="w-12 h-12 rounded-xl bg-sky-100 text-sky-600 mx-auto flex items-center justify-center text-xl font-bold border border-sky-200">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+      <div>
+        <h3 class="font-extrabold text-slate-900 text-base">เข้าสู่ระบบปฏิบัติงาน</h3>
+        <p class="text-xs text-slate-500 mt-1">เลือกสิทธิ์การใช้งานและกรอกรหัสผ่าน</p>
+      </div>
+
+      <div class="space-y-3 text-left">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">เลือกประเภทผู้ใช้</label>
+          <select id="loginRoleSelect" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold text-slate-800">
+            <option value="OPERATOR">ผู้ปฏิบัติงาน (Operator - อัปเดตงาน/ไฟล์)</option>
+            <option value="ADMIN">ผู้ดูแลระบบ (Admin - จัดการได้ทั้งหมด)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">รหัสผ่าน (Passcode)</label>
+          <input type="password" id="loginPasscode" onkeypress="handleLoginKey(event)" placeholder="•••••" class="w-full text-center text-lg font-black tracking-widest bg-slate-50 border border-slate-300 rounded-lg py-2 text-slate-900 focus:outline-none focus:border-sky-600">
+        </div>
+      </div>
+
+      <p id="loginErrorMsg" class="text-xs text-rose-600 font-bold hidden"><i class="fa-solid fa-circle-exclamation me-1"></i>รหัสผ่านไม่ถูกต้อง!</p>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="closeLoginModal()" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">ยกเลิก</button>
+        <button onclick="submitLogin()" class="flex-1 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-extrabold shadow-sm">เข้าสู่ระบบ</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="notifyAlertModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="light-card rounded-2xl max-w-xs w-full p-5 text-center space-y-3 shadow-2xl">
+      <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center text-lg font-bold border border-emerald-200">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <h3 id="notifyAlertMessage" class="text-xs font-bold text-slate-900">ทำรายการเรียบร้อยแล้ว</h3>
+      <button onclick="closeNotifyModal()" class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-sm">ตกลง</button>
+    </div>
+  </div>
+
+  <!-- SUMMARY DRAWER MODAL -->
+  <div id="summaryModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden justify-end">
+    <div class="drawer-slide bg-white border-l border-slate-200 max-w-xl w-full h-full overflow-y-auto p-5 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <h3 class="font-extrabold text-base text-sky-700 flex items-center gap-2">
+          <i class="fa-solid fa-file-contract"></i>
+          <span>รายละเอียดข้อมูลโครงการเชิงลึก</span>
+        </h3>
+        <button onclick="closeSummaryModal()" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 flex items-center justify-center text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="summaryModalContent" class="space-y-3"></div>
+    </div>
+  </div>
+
+  <!-- INITIAL FORM MODAL (ADMIN ONLY) -->
+  <div id="initialModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="light-card rounded-2xl max-w-2xl w-full p-5 space-y-4 my-6 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <h3 id="initialModalTitle" class="font-extrabold text-base text-sky-700">บันทึกข้อมูลตั้งต้นโครงการ</h3>
+        <button onclick="closeInitialModal()" class="text-slate-400 hover:text-slate-700 text-base"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="initialForm" class="space-y-3 text-xs">
+        <input type="hidden" id="id" name="id">
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">ปีงบประมาณ *</label>
+            <select id="fiscal_year" name="fiscal_year" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 font-bold">
+              <option value="2568">2568</option>
+              <option value="2569">2569</option>
+              <option value="2570" selected>2570</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">ไตรมาส</label>
+            <select id="quarter" name="quarter" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 font-bold">
+              <option value="ไตรมาสที่ 1">ไตรมาสที่ 1</option>
+              <option value="ไตรมาสที่ 2">ไตรมาสที่ 2</option>
+              <option value="ไตรมาสที่ 3">ไตรมาสที่ 3</option>
+              <option value="ไตรมาสที่ 4">ไตรมาสที่ 4</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">งบประมาณตั้งไว้ (บาท) *</label>
+            <input type="number" step="0.01" id="budget_amount" name="budget_amount" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 font-bold">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">ชื่อโครงการ *</label>
+          <input type="text" id="project_name" name="project_name" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 font-bold">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">รายละเอียดกิจกรรม</label>
+          <textarea id="activity_detail" name="activity_detail" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 font-medium"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">หมู่ที่ *</label>
+            <select id="moo_no" name="moo_no" onchange="onMooChange()" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 font-bold">
+              <option value="">-- เลือกหมู่ที่ --</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">ชื่อหมู่บ้าน</label>
+            <input type="text" id="village_name" name="village_name" readonly class="w-full bg-slate-100 border border-slate-200 rounded-lg p-2 text-slate-600 font-bold">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">ช่างรับผิดชอบ</label>
+            <input type="text" id="officer_in_charge" name="officer_in_charge" readonly class="w-full bg-slate-100 border border-slate-200 rounded-lg p-2 text-slate-600 font-bold">
+          </div>
+        </div>
+
+        <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-xl space-y-2">
+          <span class="font-bold text-amber-800 block text-xs"><i class="fa-solid fa-coins me-1"></i>หมวดหมู่และงบประมาณ (5 รายการ Master)</span>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div><label class="block text-[10px] text-slate-600 font-bold">1. งาน</label><select id="work_group" name="work_group" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs"></select></div>
+            <div><label class="block text-[10px] text-slate-600 font-bold">2. งบรายจ่าย</label><select id="budget_group" name="budget_group" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs"></select></div>
+            <div><label class="block text-[10px] text-slate-600 font-bold">3. หมวดรายจ่าย</label><select id="budget_category" name="budget_category" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs"></select></div>
+            <div><label class="block text-[10px] text-slate-600 font-bold">4. ประเภทรายจ่าย</label><select id="budget_type" name="budget_type" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs"></select></div>
+            <div class="sm:col-span-2"><label class="block text-[10px] text-slate-600 font-bold">5. แหล่งเงิน</label><select id="funding_source" name="funding_source" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs"></select></div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-sky-50/60 border border-sky-200 rounded-xl space-y-2">
+          <span class="font-bold text-sky-800 block text-xs"><i class="fa-regular fa-calendar-check me-1"></i>กำหนดเวลาตามแผนงาน</span>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-[10px] text-slate-600 font-bold">วันเริ่มตามแผน</label><input type="date" id="plan_start_date" name="plan_start_date" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs text-slate-800 font-bold"></div>
+            <div><label class="block text-[10px] text-slate-600 font-bold">วันสิ้นสุดตามแผน</label><input type="date" id="plan_end_date" name="plan_end_date" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs text-slate-800 font-bold"></div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
+          <button type="button" onclick="closeInitialModal()" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">ยกเลิก</button>
+          <button type="button" onclick="submitInitialForm()" class="px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-extrabold shadow-sm"><i class="fa-solid fa-floppy-disk me-1"></i>บันทึกโครงการ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PROGRESS & FILE MANAGEMENT MODAL -->
+  <div id="progressModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="light-card rounded-2xl max-w-2xl w-full p-5 space-y-4 my-6 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <h3 class="font-extrabold text-base text-emerald-700"><i class="fa-solid fa-list-check me-2"></i>อัปเดตขั้นตอนความก้าวหน้า & เอกสาร PDF</h3>
+        <button onclick="closeProgressModal()" class="text-slate-400 hover:text-slate-700 text-base"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="progressForm" class="space-y-3 text-xs">
+        <input type="hidden" id="progress_id" name="id">
+        <input type="hidden" id="progress_budget_amount" name="budget_amount">
+        <input type="hidden" id="current_status" name="current_status">
+        <input type="hidden" id="physical_progress" name="physical_progress">
+
+        <div class="p-3 bg-sky-50 border border-sky-200 rounded-xl text-sky-900">
+          <strong>โครงการ:</strong> <span id="lbl_project_name" class="font-extrabold text-slate-900 text-sm me-2">-</span>
+        </div>
+
+        <!-- 8 NEW MASTER STEPS CHECKBOXES -->
+        <div class="space-y-1.5">
+          <span class="font-bold text-sky-800 block text-xs"><i class="fa-solid fa-square-check me-1"></i>ติ๊กเลือกขั้นตอนที่เรียบร้อยแล้ว (8 ขั้นตอน)</span>
+          <div id="stepsContainer" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- CONTRACT & FINANCIAL -->
+        <div class="space-y-2 pt-2 border-t border-slate-200">
+          <span class="font-bold text-slate-800 block text-xs"><i class="fa-solid fa-file-contract me-1"></i>ข้อมูลสัญญาและการเบิกจ่าย</span>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div><label class="block text-[10px] text-slate-600 font-bold">เลขที่สัญญา</label><input type="text" id="contract_no" name="contract_no" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 font-bold"></div>
+            <div><label class="block text-[10px] text-slate-600 font-bold">ผู้รับจ้าง</label><input type="text" id="vendor_name" name="vendor_name" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 font-bold"></div>
+            <div><label class="block text-[10px] text-slate-600 font-bold">วงเงินสัญญา (บาท)</label><input type="number" step="0.01" id="approved_amount" name="approved_amount" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 font-bold"></div>
+            <div><label class="block text-[10px] text-slate-600 font-bold">วันเริ่มสัญญา</label><input type="date" id="contract_start_date" name="contract_start_date" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 font-bold"></div>
+            <div><label class="block text-[10px] text-slate-600 font-bold">วันสิ้นสุดสัญญา</label><input type="date" id="contract_end_date" name="contract_end_date" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 font-bold"></div>
+            <div><label class="block text-[10px] text-slate-600 font-bold">เบิกจ่ายแล้ว (บาท)</label><input type="number" step="0.01" id="disbursed_amount" name="disbursed_amount" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 font-bold"></div>
+          </div>
+        </div>
+
+        <!-- DRIVE PDF UPLOAD & FILE LIST -->
+        <div id="driveUploadSection" class="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-2">
+          <span class="font-bold text-emerald-800 block text-xs"><i class="fa-solid fa-file-pdf me-1"></i>จัดเก็บไฟล์โครงการ PDF (บันทึกลง Google Drive)</span>
+          
+          <div id="completedPdfNotice" class="hidden p-2 bg-amber-100 border border-amber-300 rounded-lg text-amber-900 font-bold text-[11px]">
+            <i class="fa-solid fa-bell me-1 text-amber-700"></i> โครงการตรวจรับงานเรียบร้อยแล้ว! กรุณาแนบไฟล์เอกสาร PDF สรุปโครงการ
+          </div>
+
+          <div>
+            <label class="block text-[10px] text-slate-600 font-bold mb-1">เลือกไฟล์ PDF เพื่ออัปโหลด</label>
+            <input type="file" id="pdfFileInput" accept="application/pdf" class="w-full bg-white border border-slate-200 rounded-lg p-1 text-xs text-slate-700">
+          </div>
+
+          <!-- Existing Files Area -->
+          <div class="space-y-1">
+            <span class="text-[10px] font-bold text-slate-600 block">รายการไฟล์ในโฟลเดอร์โครงการ:</span>
+            <div id="fileListContainer" class="p-2 bg-white rounded-lg border border-slate-200 text-xs space-y-1 max-h-32 overflow-y-auto">
+              <span class="text-slate-400">กำลังโหลดรายการไฟล์...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ISSUES & RISKS -->
+        <div class="p-3 bg-rose-50/60 border border-rose-200 rounded-xl space-y-2">
+          <span class="font-bold text-rose-800 block text-xs"><i class="fa-solid fa-triangle-exclamation me-1"></i>บันทึกปัญหา/อุปสรรคความล่าช้า</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] text-slate-600 font-bold">สาเหตุหลัก</label>
+              <select id="issue_category" name="issue_category" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 font-bold">
+                <option value="">-- ดำเนินการปกติ --</option>
+              </select>
+            </div>
+            <div><label class="block text-[10px] text-slate-600 font-bold">ผู้รับผิดชอบแก้ปัญหา</label><input type="text" id="issue_owner" name="issue_owner" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 font-bold"></div>
+            <div class="sm:col-span-2"><label class="block text-[10px] text-slate-600 font-bold">รายละเอียดปัญหา</label><input type="text" id="issue_detail" name="issue_detail" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 font-bold"></div>
+            <div><label class="block text-[10px] text-sky-700 font-bold">งานถัดไป (Next Action)</label><input type="text" id="issue_next_action" name="issue_next_action" class="w-full bg-white border border-sky-300 rounded-lg p-1.5 font-bold"></div>
+            <div><label class="block text-[10px] text-slate-600 font-bold">กำหนดติดตาม</label><input type="date" id="issue_due_date" name="issue_due_date" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 font-bold"></div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
+          <button type="button" onclick="closeProgressModal()" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">ยกเลิก</button>
+          <button type="button" id="btnSubmitProgress" onclick="submitProgressForm()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-extrabold shadow-sm"><i class="fa-solid fa-floppy-disk me-1"></i>บันทึกอัปเดต</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // Google Apps Script REST API Web App URL
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyLGZOLL-xuVSX55iznYYplHQroxm7QzGHXjuPmY3WAWkXSnMhYVTqDsFKApWb_iH6yCQ/exec";
+
+    let masterVillagesMap = {};
+    let allProjectsData = [];
+    let currentUserRole = 'GUEST'; // GUEST, OPERATOR, ADMIN
+
+    let chartMonthlyInst = null, chartHealthInst = null;
+
+    let MASTER_WORK_GROUPS = [];
+    let MASTER_BUDGET_GROUPS = [];
+    let MASTER_BUDGET_CATEGORIES = [];
+    let MASTER_BUDGET_TYPES = [];
+    let MASTER_FUNDING_SOURCES = [];
+
+    const STEPS_MASTER = [
+      { id: 0, name: "ยังไม่ได้เริ่มดำเนินการ", pct: 0, color: '#64748b' },
+      { id: 1, name: "1. ขออนุญาตใช้สถานที่", pct: 10, color: '#94a3b8' },
+      { id: 2, name: "2. แบบรูปรายการเรียบร้อย", pct: 20, color: '#0284c7' },
+      { id: 3, name: "3. กำหนดราคากลาง/TOR เรียบร้อย", pct: 30, color: '#0369a1' },
+      { id: 4, name: "4. พิจารณาผลจัดซื้อจัดจ้างแล้ว", pct: 40, color: '#4f46e5' },
+      { id: 5, name: "5. อยู่ระหว่างจัดซื้อจัดจ้าง", pct: 50, color: '#075985' },
+      { id: 6, name: "6. อยู่ระหว่างดำเนินการ", pct: 70, color: '#0891b2' },
+      { id: 7, name: "7. ผู้รับจ้างดำเนินการส่งมอบงานแล้ว", pct: 85, color: '#059669' },
+      { id: 8, name: "8. ตรวจรับงานเรียบร้อย", pct: 100, color: '#16a34a' }
+    ];
+
+    const OFFICER_COLOR_MAP = {
+      'ช่างหาญ':     { bg: '#0284c7', text: '#FFFFFF' },
+      'ช่างโน้ต':    { bg: '#0369a1', text: '#FFFFFF' },
+      'ช่างดั้ม':    { bg: '#dc2626', text: '#FFFFFF' },
+      'ช่างยูร':    { bg: '#d97706', text: '#FFFFFF' },
+      'ช่างป้อน':    { bg: '#b45309', text: '#FFFFFF' },
+      'ช่างคะนอง':  { bg: '#475569', text: '#FFFFFF' },
+      'น้องมิ้ว/กอง': { bg: '#db2777', text: '#FFFFFF' }
+    };
+
+    function getOfficerStyle(officerName) {
+      if (!officerName || typeof officerName !== 'string') return { bg: '#e2e8f0', text: '#475569' };
+      const name = officerName.trim();
+      if (name === '' || name === '-') return { bg: '#e2e8f0', text: '#475569' };
+      if (OFFICER_COLOR_MAP[name]) return OFFICER_COLOR_MAP[name];
+      return { bg: '#cbd5e1', text: '#0f172a' };
+    }
+
+    function calculateQuarterFromDates(startDateStr, endDateStr) {
+      if (!startDateStr || !endDateStr) return '-';
+      const start = parseLocalDateStr(startDateStr);
+      const end = parseLocalDateStr(endDateStr);
+      if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) return '-';
+
+      const getQ = (dateObj) => {
+        const m = dateObj.getMonth() + 1;
+        if (m >= 10 && m <= 12) return 1;
+        if (m >= 1 && m <= 3) return 2;
+        if (m >= 4 && m <= 6) return 3;
+        return 4;
+      };
+
+      const qStart = getQ(start);
+      const qEnd = getQ(end);
+      if (qStart === qEnd) return `ไตรมาสที่ ${qStart}`;
+      return `ไตรมาสที่ ${qStart}/${qEnd}`;
+    }
+
+    function getStepInfoByName(name) {
+      if (!name || name === "" || name.includes("ยังไม่ได้เริ่ม")) return STEPS_MASTER[0];
+      return STEPS_MASTER.find(s => s.name === name) || STEPS_MASTER[0];
+    }
+
+    function formatDateDMY(dateStr) {
+      if (!dateStr || dateStr === '-') return '-';
+      const parsed = parseLocalDateStr(dateStr);
+      if (!parsed || isNaN(parsed.getTime())) return dateStr;
+      
+      const day = String(parsed.getDate()).padStart(2, '0');
+      const month = String(parsed.getMonth() + 1).padStart(2, '0');
+      let year = parsed.getFullYear();
+      if (year < 2500) year += 543;
+      return `${day}/${month}/${year}`;
+    }
+
+    function parseLocalDateStr(dateStr) {
+      if (!dateStr) return null;
+      if (dateStr instanceof Date) return dateStr;
+      const parts = String(dateStr).trim().split('T')[0].split('-');
+      if (parts.length === 3) return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      return new Date(dateStr);
+    }
+
+    window.onload = function() {
+      checkStoredAuthSession();
+      updateLiveClock();
+      loadMasterData();
+      loadProjects();
+      renderStepsCheckboxes();
+    };
+
+    function checkStoredAuthSession() {
+      const storedRole = sessionStorage.getItem('USER_ROLE');
+      if (storedRole === 'ADMIN' || storedRole === 'OPERATOR') {
+        currentUserRole = storedRole;
+        updateAuthUI();
+      }
+    }
+
+    function openLoginModal() {
+      if (currentUserRole !== 'GUEST') {
+        if (confirm("คุณต้องการออกจากระบบหรือไม่?")) {
+          sessionStorage.removeItem('USER_ROLE');
+          currentUserRole = 'GUEST';
+          updateAuthUI();
+          showNotification("ออกจากระบบเรียบร้อยแล้ว");
+        }
+        return;
+      }
+      document.getElementById('loginPasscode').value = '';
+      document.getElementById('loginErrorMsg').classList.add('hidden');
+      document.getElementById('loginModal').classList.remove('hidden');
+      document.getElementById('loginModal').classList.add('flex');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.add('hidden');
+    }
+
+    function handleLoginKey(e) {
+      if (e.key === 'Enter') submitLogin();
+    }
+
+    async function submitLogin() {
+      const passcode = document.getElementById('loginPasscode').value;
+      const role = document.getElementById('loginRoleSelect').value;
+
+      try {
+        const response = await fetch(GAS_API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'LOGIN', passcode: passcode, requestedRole: role })
+        });
+        const res = await response.json();
+
+        if (res.success) {
+          currentUserRole = res.role;
+          sessionStorage.setItem('USER_ROLE', res.role);
+          closeLoginModal();
+          updateAuthUI();
+          showNotification(res.message);
+        } else {
+          document.getElementById('loginErrorMsg').classList.remove('hidden');
+        }
+      } catch (err) {
+        alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์: " + err.message);
+      }
+    }
+
+    function updateAuthUI() {
+      const btnText = document.getElementById('authBtnText');
+      if (currentUserRole === 'ADMIN') {
+        btnText.innerText = 'Admin (ออก)';
+        document.querySelectorAll('.auth-only').forEach(el => el.classList.remove('hidden'));
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+      } else if (currentUserRole === 'OPERATOR') {
+        btnText.innerText = 'Operator (ออก)';
+        document.querySelectorAll('.auth-only').forEach(el => el.classList.remove('hidden'));
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+      } else {
+        btnText.innerText = 'เข้าสู่ระบบ';
+        document.querySelectorAll('.auth-only').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+      }
+      filterTable();
+    }
+
+    function switchTab(tabKey) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-sky-600', 'text-white', 'shadow-sm');
+        btn.classList.add('text-slate-600');
+      });
+      document.getElementById(`tab-content-table`).classList.add('hidden');
+      document.getElementById(`tab-content-dash`).classList.add('hidden');
+      document.getElementById(`tab-content-gantt`).classList.add('hidden');
+
+      document.getElementById(`tab-content-${tabKey}`).classList.remove('hidden');
+
+      if (tabKey === 'table') {
+        document.getElementById('tab-btn-table').classList.add('bg-sky-600', 'text-white', 'shadow-sm');
+      } else if (tabKey === 'dash') {
+        document.getElementById('tab-btn-dash').classList.add('bg-sky-600', 'text-white', 'shadow-sm');
+        renderDashboardCharts();
+      } else if (tabKey === 'gantt') {
+        document.getElementById('tab-btn-gantt').classList.add('bg-sky-600', 'text-white', 'shadow-sm');
+        renderGanttBoard(true);
+      }
+    }
+
+    function initStaticDropdowns() {
+      populateSelectOptions('work_group', MASTER_WORK_GROUPS);
+      populateSelectOptions('budget_group', MASTER_BUDGET_GROUPS);
+      populateSelectOptions('budget_category', MASTER_BUDGET_CATEGORIES);
+      populateSelectOptions('budget_type', MASTER_BUDGET_TYPES);
+      populateSelectOptions('funding_source', MASTER_FUNDING_SOURCES);
+      populateSelectOptions('ganttFilterFunding', MASTER_FUNDING_SOURCES);
+    }
+
+    function populateSelectOptions(selectId, items) {
+      const selectEl = document.getElementById(selectId);
+      if (!selectEl || !items) return;
+      let html = '<option value="">-- เลือก --</option>';
+      items.forEach(item => {
+        html += `<option value="${item}">${item}</option>`;
+      });
+      selectEl.innerHTML = html;
+    }
+
+    function updateLiveClock() {
+      const now = new Date();
+      document.getElementById('liveClock').innerHTML = `<i class="fa-regular fa-clock me-1.5 text-sky-600"></i>อัปเดต: ${now.toLocaleTimeString('th-TH')}`;
+    }
+
+    function evaluateSmartDelayStatus(item) {
+      const physPct = Number(item.physical_progress || 0);
+      const isStep8 = item.current_status && String(item.current_status).includes("8.");
+      const isCompleted = physPct >= 100 || isStep8;
+
+      if (isCompleted) return { isCompleted: true, isOverdue: false, isContractActive: false, days: 0 };
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let hasValidContract = false;
+      let isWithinContractRange = false;
+
+      if (item.contract_start_date && item.contract_end_date) {
+        const cStart = parseLocalDateStr(item.contract_start_date);
+        const cEnd = parseLocalDateStr(item.contract_end_date);
+        if (cStart && cEnd && !isNaN(cStart.getTime()) && !isNaN(cEnd.getTime())) {
+          hasValidContract = true;
+          cStart.setHours(0, 0, 0, 0);
+          cEnd.setHours(23, 59, 59, 999);
+          if (today >= cStart && today <= cEnd) isWithinContractRange = true;
+        }
+      }
+
+      if (hasValidContract && isWithinContractRange) return { isCompleted: false, isOverdue: false, isContractActive: true, days: 0 };
+
+      if (item.plan_end_date) {
+        const planEnd = parseLocalDateStr(item.plan_end_date);
+        if (planEnd && !isNaN(planEnd.getTime())) {
+          planEnd.setHours(23, 59, 59, 999);
+          if (today > planEnd) {
+            const diffDays = Math.ceil((today.getTime() - planEnd.getTime()) / (1000 * 3600 * 24));
+            return { isCompleted: false, isOverdue: true, isContractActive: false, days: diffDays };
+          }
+        }
+      }
+
+      return { isCompleted: false, isOverdue: false, isContractActive: false, days: 0 };
+    }
+
+    function filterByCard(cardType) {
+      const selectEl = document.getElementById('filterStatus');
+      if (cardType === 'ALL') selectEl.value = "";
+      else if (cardType === 'ACTIVE') selectEl.value = "ACTIVE";
+      else if (cardType === 'COMPLETED') selectEl.value = "COMPLETED";
+      else if (cardType === 'OVERDUE') selectEl.value = "OVERDUE";
+      filterTable();
+    }
+
+    function showNotification(msg) {
+      document.getElementById('notifyAlertMessage').innerText = msg;
+      document.getElementById('notifyAlertModal').classList.remove('hidden');
+      document.getElementById('notifyAlertModal').classList.add('flex');
+    }
+
+    function closeNotifyModal() {
+      document.getElementById('notifyAlertModal').classList.add('hidden');
+    }
+
+    async function loadMasterData() {
+      try {
+        const res = await fetch(`${GAS_API_URL}?action=GET_MASTER_DATA`);
+        const result = await res.json();
+        if (!result.success) return;
+
+        const data = result.data;
+        masterVillagesMap = data.villagesMap || {};
+        MASTER_WORK_GROUPS = data.workGroups || [];
+        MASTER_BUDGET_GROUPS = data.budgetGroups || [];
+        MASTER_BUDGET_CATEGORIES = data.budgetCategories || [];
+        MASTER_BUDGET_TYPES = data.budgetTypes || [];
+        MASTER_FUNDING_SOURCES = data.fundingSources || [];
+
+        initStaticDropdowns();
+
+        const mooSelect = document.getElementById('moo_no');
+        mooSelect.innerHTML = '<option value="">-- เลือกหมู่ที่ --</option>';
+        
+        const officersSet = new Set(Object.keys(OFFICER_COLOR_MAP));
+
+        Object.keys(masterVillagesMap).forEach(moo => {
+          mooSelect.innerHTML += `<option value="${moo}">หมู่ที่ ${moo} - ${masterVillagesMap[moo].village}</option>`;
+          if (masterVillagesMap[moo].officer && masterVillagesMap[moo].officer.trim() !== '') {
+            officersSet.add(masterVillagesMap[moo].officer.trim());
+          }
+        });
+
+        if (data.delayReasons) {
+          const delaySelect = document.getElementById('issue_category');
+          delaySelect.innerHTML = '<option value="">-- ดำเนินการปกติ --</option>';
+          data.delayReasons.forEach(r => delaySelect.innerHTML += `<option value="${r}">${r}</option>`);
+        }
+        
+        updateOfficerFilterOptions(Array.from(officersSet));
+      } catch (err) {
+        console.error("Master Data Fetch Error:", err);
+      }
+    }
+
+    function updateOfficerFilterOptions(officersList) {
+      const officerSelect = document.getElementById('filterOfficer');
+      if (!officerSelect) return;
+      
+      const currentVal = officerSelect.value;
+      officerSelect.innerHTML = '<option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>';
+      
+      officersList.sort().forEach(officer => {
+        if (officer && officer !== '-' && officer.trim() !== '') {
+          officerSelect.innerHTML += `<option value="${officer}">${officer}</option>`;
+        }
+      });
+      officerSelect.value = currentVal;
+    }
+
+    function populateDynamicDropdownFilters(data) {
+      const categorySelect = document.getElementById('filterBudgetCategory');
+      const categories = [...new Set(data.map(p => p.budget_category).filter(c => c && c.trim() !== ''))];
+      categorySelect.innerHTML = '<option value="">-- ทุกหมวดรายจ่าย --</option>';
+      categories.forEach(c => {
+        categorySelect.innerHTML += `<option value="${c}">${c}</option>`;
+      });
+
+      const projectOfficers = data.map(p => p.officer_in_charge).filter(o => o && o.trim() !== '' && o !== '-');
+      const defaultOfficers = Object.keys(OFFICER_COLOR_MAP);
+      const allOfficers = [...new Set([...defaultOfficers, ...projectOfficers])];
+      updateOfficerFilterOptions(allOfficers);
+    }
+
+    function onMooChange() {
+      const selectedMoo = document.getElementById('moo_no').value;
+      if (selectedMoo && masterVillagesMap[selectedMoo]) {
+        document.getElementById('village_name').value = masterVillagesMap[selectedMoo].village;
+        document.getElementById('officer_in_charge').value = masterVillagesMap[selectedMoo].officer;
+      } else {
+        document.getElementById('village_name').value = '';
+        document.getElementById('officer_in_charge').value = '';
+      }
+    }
+
+    async function loadProjects() {
+      try {
+        const res = await fetch(GAS_API_URL);
+        const result = await res.json();
+        allProjectsData = result.data || [];
+        updateLiveClock();
+        populateDynamicDropdownFilters(allProjectsData);
+        updateMiniKpiCards(allProjectsData);
+        filterTable();
+        renderDashboardCharts();
+        renderGanttBoard(true);
+      } catch (err) {
+        console.error("Projects Fetch Error:", err);
+      }
+    }
+
+    function updateMiniKpiCards(data) {
+      let total = data.length;
+      let active = 0, completed = 0, overdue = 0;
+
+      data.forEach(p => {
+        const evalRes = evaluateSmartDelayStatus(p);
+        if (evalRes.isCompleted) completed++;
+        else {
+          active++;
+          if (evalRes.isOverdue) overdue++;
+        }
+      });
+
+      document.getElementById('mini_kpi_total').innerText = total;
+      document.getElementById('mini_kpi_active').innerText = active;
+      document.getElementById('mini_kpi_completed').innerText = completed;
+      document.getElementById('mini_kpi_overdue').innerText = overdue;
+    }
+
+    function renderStepsCheckboxes() {
+      const container = document.getElementById('stepsContainer');
+      let html = '';
+      STEPS_MASTER.filter(s => s.id > 0).forEach(step => {
+        html += `
+        <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs">
+          <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+            <input class="step-checkbox rounded bg-white border-slate-300 text-sky-600 focus:ring-0" type="checkbox" id="step_${step.id}" value="${step.name}" data-id="${step.id}" data-pct="${step.pct}" onchange="recalculateSteps()">
+            <span>${step.name}</span>
+          </label>
+        </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function recalculateSteps() {
+      let maxStepId = 0;
+      let maxStepName = "ยังไม่ได้เริ่มดำเนินการ";
+      let maxPct = 0;
+
+      STEPS_MASTER.filter(s => s.id > 0).forEach(step => {
+        const chk = document.getElementById(`step_${step.id}`);
+        if (chk && chk.checked) {
+          if (step.id > maxStepId) {
+            maxStepId = step.id;
+            maxStepName = step.name;
+            maxPct = step.pct;
+          }
+        }
+      });
+
+      document.getElementById('current_status').value = maxStepName;
+      document.getElementById('physical_progress').value = maxPct;
+
+      const notice = document.getElementById('completedPdfNotice');
+      if (maxStepId === 8) {
+        notice.classList.remove('hidden');
+      } else {
+        notice.classList.add('hidden');
+      }
+    }
+
+    /* MODERN READABLE TABLE RENDER */
+    function renderTable(data) {
+      const tbody = document.getElementById('projectTableBody');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-12 text-center text-slate-400 font-bold"><i class="fa-solid fa-folder-open me-2"></i>ไม่พบข้อมูลโครงการตามเงื่อนไขที่เลือก</td></tr>';
+        return;
+      }
+
+      let html = '';
+      data.forEach((item, index) => {
+        const rowNumber = index + 1;
+        const physPct = Number(item.physical_progress || 0);
+        const evalRes = evaluateSmartDelayStatus(item);
+
+        let rowBg = "hover:bg-slate-50";
+        if (evalRes.isCompleted) rowBg = "bg-emerald-50/30 hover:bg-emerald-50/60";
+        else if (evalRes.isOverdue) rowBg = "bg-rose-50/30 hover:bg-rose-50/60";
+        else if (evalRes.isContractActive) rowBg = "bg-sky-50/30 hover:bg-sky-50/60";
+
+        const stepObj = getStepInfoByName(item.current_status);
+        const officerStyle = getOfficerStyle(item.officer_in_charge);
+
+        let datesInfo = '';
+        if (item.plan_start_date && item.plan_end_date) {
+          let overdueTag = evalRes.isOverdue ? `<span class="bg-rose-100 text-rose-800 border border-rose-300 px-1.5 py-0.5 rounded-md text-[10px] font-black ms-1 whitespace-nowrap">เกินแผน ${evalRes.days} วัน</span>` : '';
+          datesInfo += `<div class="text-xs text-slate-800 font-bold leading-tight"><i class="fa-regular fa-calendar-check text-sky-600 me-1"></i><strong>แผน:</strong> ${formatDateDMY(item.plan_start_date)} - ${formatDateDMY(item.plan_end_date)}${overdueTag}</div>`;
+        } else {
+          datesInfo += `<div class="text-xs text-slate-400 font-bold leading-tight"><i class="fa-regular fa-calendar me-1"></i>แผน: ยังไม่ระบุ</div>`;
+        }
+
+        if (item.contract_start_date && item.contract_end_date) {
+          let contractStatusTag = evalRes.isContractActive ? `<span class="bg-sky-100 text-sky-800 border border-sky-300 px-1.5 py-0.5 rounded-md text-[10px] font-black ms-1 whitespace-nowrap">ตามสัญญา</span>` : '';
+          datesInfo += `<div class="text-xs text-slate-600 mt-1 font-semibold leading-tight"><i class="fa-solid fa-file-contract me-1"></i><strong>สัญญา:</strong> ${formatDateDMY(item.contract_start_date)} - ${formatDateDMY(item.contract_end_date)}${contractStatusTag}</div>`;
+        }
+
+        let authBtns = '';
+        if (currentUserRole !== 'GUEST') {
+          let editInitBtn = '';
+          let deleteBtn = '';
+
+          if (currentUserRole === 'ADMIN') {
+            editInitBtn = `<button onclick="editInitialProjectById('${item.id}')" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-sky-700 rounded-lg text-xs border border-slate-300" title="แก้ไขข้อมูลตั้งต้น"><i class="fa-solid fa-pen"></i></button>`;
+            deleteBtn = `<button onclick="confirmDeleteProject('${item.id}')" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-rose-700 rounded-lg text-xs border border-slate-300" title="ลบโครงการ"><i class="fa-solid fa-trash"></i></button>`;
+          }
+
+          authBtns = `<td class="py-2 px-2 text-center border-r border-slate-200" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-center gap-1.5">
+              <button onclick="openProgressModalById('${item.id}')" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-black shadow-sm" title="อัปเดตงานและไฟล์ PDF">อัปเดต</button>
+              ${editInitBtn}
+              ${deleteBtn}
+            </div>
+          </td>`;
+        }
+
+        html += `<tr class="cursor-pointer border-b border-slate-200 transition ${rowBg}" onclick="viewProjectSummaryById('${item.id}')">
+          <td class="py-3 px-3 text-center font-black text-slate-500 border-r border-slate-200 text-xs">${rowNumber}</td>
+          
+          <td class="py-3 px-3 border-r border-slate-200">
+            <div class="font-extrabold text-slate-900 text-sm leading-snug">${item.project_name}</div>
+            <div class="text-xs text-slate-600 font-semibold mt-1 flex items-center gap-1">
+              <i class="fa-solid fa-location-dot text-rose-600"></i>
+              <span>หมู่ ${item.moo_no} ${item.village_name}</span>
+            </div>
+          </td>
+
+          <td class="py-3 px-3 border-r border-slate-200">
+            <div class="text-xs text-slate-800 leading-tight">ตั้งไว้: <strong class="text-sky-700 font-black text-sm">${Number(item.budget_amount||0).toLocaleString('th-TH')} ฿</strong></div>
+            <div class="text-xs text-slate-600 leading-tight mt-0.5">สัญญา: <strong class="text-slate-900 font-bold">${item.approved_amount ? Number(item.approved_amount).toLocaleString('th-TH') + ' ฿' : '-'}</strong></div>
+            <div class="mt-1 flex flex-wrap items-center gap-1">
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold shadow-sm whitespace-nowrap" style="background-color: ${officerStyle.bg}; color: ${officerStyle.text}">
+                <i class="fa-solid fa-user-gear me-1"></i>${item.officer_in_charge || '-'}
+              </span>
+              <span class="bg-slate-100 text-slate-700 border border-slate-300 px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap">
+                ${item.funding_source || 'ไม่ระบุ'}
+              </span>
+            </div>
+          </td>
+
+          <td class="py-3 px-3 border-r border-slate-200">${datesInfo}</td>
+          
+          <td class="py-3 px-3 border-r border-slate-200">
+            <span class="px-2.5 py-1 rounded-full text-xs font-extrabold text-white inline-block shadow-sm whitespace-nowrap" style="background-color: ${stepObj.color}">${stepObj.name}</span>
+          </td>
+
+          <td class="py-3 px-3 text-center border-r border-slate-200">
+            <div class="w-full bg-slate-100 rounded-full h-3.5 border border-slate-300 overflow-hidden relative">
+              <div class="h-full transition-all duration-300 flex items-center justify-center text-[10px] font-black text-white" style="width: ${physPct}%; background-color: ${stepObj.color}">
+                ${physPct > 25 ? physPct + '%' : ''}
+              </div>
+            </div>
+            ${physPct <= 25 ? `<span class="text-xs font-black text-slate-700 mt-0.5 block leading-none">${physPct}%</span>` : ''}
+          </td>
+          ${authBtns}
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    async function viewProjectSummaryById(projectId) {
+      const item = allProjectsData.find(p => String(p.id) === String(projectId));
+      if (!item) return;
+
+      const budget = Number(item.budget_amount || 0).toLocaleString('th-TH');
+      const approved = item.approved_amount ? Number(item.approved_amount).toLocaleString('th-TH') + ' บาท' : 'ยังไม่ได้ทำสัญญา';
+      const disbursed = item.disbursed_amount ? Number(item.disbursed_amount).toLocaleString('th-TH') + ' บาท' : '0 บาท';
+      const savings = Number(item.budget_savings || 0).toLocaleString('th-TH');
+      const physPct = Number(item.physical_progress || 0);
+
+      const evalRes = evaluateSmartDelayStatus(item);
+      const stepObj = getStepInfoByName(item.current_status);
+
+      let delayStatusBadge = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-lg text-xs font-bold"><i class="fa-solid fa-circle-check me-1"></i>ดำเนินการตามแผนปกติ</span>`;
+      if (evalRes.isOverdue) {
+        delayStatusBadge = `<span class="bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5 rounded-lg text-xs font-bold"><i class="fa-solid fa-triangle-exclamation me-1"></i>เกินแผนงาน ${evalRes.days} วัน</span>`;
+      } else if (evalRes.isContractActive) {
+        delayStatusBadge = `<span class="bg-sky-100 text-sky-800 border border-sky-300 px-2 py-0.5 rounded-lg text-xs font-bold"><i class="fa-solid fa-file-contract me-1"></i>อยู่ในระยะเวลาตามสัญญา</span>`;
+      }
+
+      let fileListHtml = '<span class="text-slate-400">กำลังดึงไฟล์ใน Google Drive...</span>';
+
+      const content = `
+        <div class="space-y-4 text-xs">
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <h4 class="font-black text-base text-slate-900 leading-snug">${item.project_name}</h4>
+                <div class="flex flex-wrap gap-1.5 mt-1.5">
+                  <span class="bg-slate-200 text-slate-800 font-bold px-2 py-0.5 rounded-md text-[11px]">ID: ${item.id}</span>
+                  <span class="bg-sky-100 text-sky-800 border border-sky-200 font-bold px-2 py-0.5 rounded-md text-[11px]">ปีงบฯ ${item.fiscal_year} (${item.quarter || 'ไม่ระบุ'})</span>
+                  <span class="bg-slate-200 text-slate-800 font-semibold px-2 py-0.5 rounded-md text-[11px]">หมู่ ${item.moo_no} ${item.village_name}</span>
+                  <span class="bg-indigo-100 text-indigo-800 border border-indigo-200 font-semibold px-2 py-0.5 rounded-md text-[11px]">${item.funding_source || 'ไม่ระบุ'}</span>
+                </div>
+              </div>
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold text-white whitespace-nowrap shadow-sm" style="background-color: ${stepObj.color}">${stepObj.name}</span>
+            </div>
+            ${item.activity_detail ? `
+              <div class="p-2.5 bg-white rounded-lg border border-slate-200 text-slate-800 font-medium text-xs leading-relaxed">
+                <strong class="text-slate-900 block mb-1 text-xs"><i class="fa-solid fa-align-left me-1 text-sky-600"></i>รายละเอียดกิจกรรม:</strong>
+                ${item.activity_detail.replace(/\n/g, '<br>')}
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+              <span class="font-bold text-sky-800 block text-xs"><i class="fa-regular fa-calendar-check me-1"></i>กำหนดเวลาตามแผนงาน</span>
+              <div class="text-xs"><strong>วันเริ่มแผน:</strong> ${formatDateDMY(item.plan_start_date)}</div>
+              <div class="text-xs"><strong>วันสิ้นสุดแผน:</strong> ${formatDateDMY(item.plan_end_date)}</div>
+              <div class="pt-1">${delayStatusBadge}</div>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+              <span class="font-bold text-slate-700 block text-xs"><i class="fa-solid fa-file-contract me-1"></i>กำหนดเวลาตามสัญญา</span>
+              <div class="text-xs"><strong>เลขที่สัญญา:</strong> ${item.contract_no || '-'}</div>
+              <div class="text-xs"><strong>ผู้รับจ้าง:</strong> ${item.vendor_name || '-'}</div>
+              <div class="text-xs"><strong>ช่วงเวลาสัญญา:</strong> ${formatDateDMY(item.contract_start_date)} ถึง ${formatDateDMY(item.contract_end_date)}</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-center">
+              <span class="text-[11px] text-slate-500 font-bold block">งบตั้งไว้</span>
+              <strong class="text-slate-900 text-xs font-black">${budget} ฿</strong>
+            </div>
+            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-center">
+              <span class="text-[11px] text-slate-500 font-bold block">วงเงินสัญญา</span>
+              <strong class="text-sky-700 text-xs font-black">${approved}</strong>
+            </div>
+            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-center">
+              <span class="text-[11px] text-slate-500 font-bold block">เบิกจ่ายแล้ว</span>
+              <strong class="text-emerald-700 text-xs font-black">${disbursed}</strong>
+            </div>
+            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-center">
+              <span class="text-[11px] text-slate-500 font-bold block">ประหยัดได้</span>
+              <strong class="text-amber-700 text-xs font-black">${savings} ฿</strong>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="font-bold text-slate-800 text-xs">ความก้าวหน้าทางกายภาพ</span>
+              <span class="font-extrabold text-sky-700 text-xs">${physPct}%</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-3.5 border border-slate-300 overflow-hidden">
+              <div class="h-full transition-all" style="width: ${physPct}%; background-color: ${stepObj.color}"></div>
+            </div>
+          </div>
+
+          <!-- DRIVE FILES LIST -->
+          <div class="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-2">
+            <span class="font-bold text-emerald-800 block text-xs"><i class="fa-solid fa-folder-open me-1"></i>ไฟล์เอกสารโครงการใน Google Drive</span>
+            <div id="drawerFileList" class="p-2 bg-white rounded-lg border border-slate-200 space-y-1">
+              ${fileListHtml}
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('summaryModalContent').innerHTML = content;
+      document.getElementById('summaryModal').classList.remove('hidden');
+      document.getElementById('summaryModal').classList.add('flex');
+
+      // Fetch Drive Files
+      try {
+        const res = await fetch(`${GAS_API_URL}?action=GET_PROJECT_FILES&projectId=${item.id}`);
+        const result = await res.json();
+        if (result.success && result.data.files) {
+          const listContainer = document.getElementById('drawerFileList');
+          if (result.data.files.length === 0) {
+            listContainer.innerHTML = '<span class="text-slate-400">ยังไม่มีการอัปโหลดไฟล์ PDF ในโครงการนี้</span>';
+          } else {
+            let filesHtml = '';
+            result.data.files.forEach(f => {
+              filesHtml += `<div class="flex items-center justify-between p-1.5 bg-slate-50 rounded border border-slate-200">
+                <span class="font-bold text-slate-800 text-xs truncate max-w-[280px]"><i class="fa-solid fa-file-pdf text-rose-600 me-1"></i>${f.fileName}</span>
+                <a href="${f.fileUrl}" target="_blank" class="px-2 py-0.5 bg-sky-600 hover:bg-sky-500 text-white rounded text-[10px] font-bold">เปิดดู</a>
+              </div>`;
+            });
+            listContainer.innerHTML = filesHtml;
+          }
+        }
+      } catch (err) {
+        console.error("Fetch files error:", err);
+      }
+    }
+
+    function closeSummaryModal() {
+      document.getElementById('summaryModal').classList.add('hidden');
+    }
+
+    function renderDashboardCharts() {
+      if (!allProjectsData || allProjectsData.length === 0) return;
+
+      const fyFilter = document.getElementById('dashFilterFiscalYear').value;
+      const filteredData = allProjectsData.filter(p => fyFilter === "" || String(p.fiscal_year) === fyFilter);
+
+      let totB = 0, appB = 0, disB = 0, savB = 0;
+      let healthCounts = { GREEN: 0, AMBER: 0, RED: 0, COMPLETED: 0 };
+
+      filteredData.forEach(p => {
+        const b = parseFloat(p.budget_amount) || 0;
+        const a = parseFloat(p.approved_amount) || 0;
+        const d = parseFloat(p.disbursed_amount) || 0;
+        const s = parseFloat(p.budget_savings) || 0;
+
+        totB += b; appB += a; disB += d; savB += s;
+
+        const evalRes = evaluateSmartDelayStatus(p);
+
+        if (evalRes.isCompleted) {
+          healthCounts.COMPLETED++;
+        } else {
+          if (evalRes.isOverdue || p.health_status === 'RED' || p.active_issue) {
+            healthCounts.RED++;
+          } else if (evalRes.isContractActive || p.health_status === 'AMBER') {
+            healthCounts.AMBER++;
+          } else {
+            healthCounts.GREEN++;
+          }
+        }
+      });
+
+      document.getElementById('dash_total_budget').innerText = totB.toLocaleString('th-TH') + ' ฿';
+      document.getElementById('dash_approved_budget').innerText = appB.toLocaleString('th-TH') + ' ฿';
+      document.getElementById('dash_disbursed_budget').innerText = disB.toLocaleString('th-TH') + ' ฿';
+      document.getElementById('dash_savings_budget').innerText = savB.toLocaleString('th-TH') + ' ฿';
+
+      Chart.defaults.color = '#334155';
+      Chart.defaults.borderColor = '#e2e8f0';
+
+      if (chartMonthlyInst) chartMonthlyInst.destroy();
+      chartMonthlyInst = new Chart(document.getElementById('chartMonthlyTrend'), {
+        type: 'line',
+        data: {
+          labels: ['ต.ค.', 'พ.ย.', 'ธ.ค.', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.'],
+          datasets: [
+            { label: 'แผนสะสม (%)', data: [5, 10, 15, 25, 40, 55, 70, 80, 90, 95, 100, 100], borderColor: '#0284c7', tension: 0.3 },
+            { label: 'ผลเบิกจ่ายจริง (%)', data: [2, 5, 10, 18, 30, 45, 60, 72, 85, 90, 94, 98], borderColor: '#16a34a', backgroundColor: 'rgba(22, 163, 74, 0.08)', tension: 0.3, fill: true }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      if (chartHealthInst) chartHealthInst.destroy();
+      chartHealthInst = new Chart(document.getElementById('chartHealthDonut'), {
+        type: 'doughnut',
+        data: {
+          labels: ['ปกติ', 'อยู่ในสัญญา', 'เกินแผน/มีปัญหา', 'แล้วเสร็จ'],
+          datasets: [{ data: [healthCounts.GREEN, healthCounts.AMBER, healthCounts.RED, healthCounts.COMPLETED], backgroundColor: ['#16a34a', '#d97706', '#dc2626', '#0284c7'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    function sortGanttBoard() {
+      renderGanttBoard(true);
+      showNotification("จัดเรียงลำดับโครงการตามวันเริ่ม-สิ้นสุดเรียบร้อยแล้ว");
+    }
+
+    function renderGanttBoard(shouldSort = false) {
+      const tbody = document.getElementById('ganttTableBody');
+      if (!allProjectsData || allProjectsData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="22" class="p-8 text-center text-slate-400 font-bold">ไม่พบข้อมูลโครงการในระบบ</td></tr>';
+        return;
+      }
+
+      const fyFilter = document.getElementById('ganttFilterFy').value;
+      const fundingFilter = document.getElementById('ganttFilterFunding').value;
+
+      let filteredData = allProjectsData.filter(p => {
+        const matchFy = fyFilter === "" || String(p.fiscal_year) === fyFilter;
+        const matchFunding = fundingFilter === "" || String(p.funding_source) === fundingFilter;
+        return matchFy && matchFunding;
+      });
+
+      if (shouldSort) {
+        filteredData.sort((a, b) => {
+          const startA = parseLocalDateStr(a.plan_start_date);
+          const startB = parseLocalDateStr(b.plan_start_date);
+
+          const timeA = (startA && !isNaN(startA.getTime())) ? startA.getTime() : Infinity;
+          const timeB = (startB && !isNaN(startB.getTime())) ? startB.getTime() : Infinity;
+
+          return timeA - timeB;
+        });
+      }
+
+      if (filteredData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="22" class="p-8 text-center text-slate-400 font-bold">ไม่พบโครงการตามเงื่อนไขที่เลือก</td></tr>';
+        return;
+      }
+
+      let html = '';
+      filteredData.forEach((item, idx) => {
+        const rowNum = idx + 1;
+        const quarterStr = calculateQuarterFromDates(item.plan_start_date, item.plan_end_date);
+        const budgetFormatted = Number(item.budget_amount || 0).toLocaleString('th-TH');
+        
+        const officerStyle = getOfficerStyle(item.officer_in_charge);
+
+        const fyMonths = [9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8];
+        const monthActiveFlags = Array(12).fill(false);
+
+        if (item.plan_start_date && item.plan_end_date) {
+          const start = parseLocalDateStr(item.plan_start_date);
+          const end = parseLocalDateStr(item.plan_end_date);
+
+          if (start && end && !isNaN(start.getTime()) && !isNaN(end.getTime())) {
+            fyMonths.forEach((mIndex, i) => {
+              let checkYear = start.getFullYear();
+              if (mIndex >= 9 && start.getMonth() < 9) checkYear = start.getFullYear() - 1;
+              else if (mIndex < 9 && start.getMonth() >= 9) checkYear = start.getFullYear() + 1;
+
+              const mStart = new Date(checkYear, mIndex, 1);
+              const mEnd = new Date(checkYear, mIndex + 1, 0, 23, 59, 59);
+
+              if (start <= mEnd && end >= mStart) {
+                monthActiveFlags[i] = true;
+              }
+            });
+          }
+        }
+
+        let monthCellsHtml = '';
+        monthActiveFlags.forEach(isActive => {
+          if (isActive) {
+            monthCellsHtml += `<td class="p-1 border-r border-slate-200" style="background-color: ${officerStyle.bg};" title="ผู้รับผิดชอบ: ${item.officer_in_charge}"></td>`;
+          } else {
+            monthCellsHtml += `<td class="p-1 border-r border-slate-200 bg-slate-50"></td>`;
+          }
+        });
+
+        html += `<tr class="cursor-pointer hover:bg-slate-100 transition border-b border-slate-200" onclick="viewProjectSummaryById('${item.id}')">
+          <td class="py-2 px-2 font-bold text-slate-500 border-r border-slate-200 text-xs">${rowNum}</td>
+          <td class="py-2 px-3 text-left border-r border-slate-200">
+            <span class="font-extrabold text-slate-900 text-xs leading-snug block">${item.project_name}</span>
+            <span class="bg-slate-100 text-slate-700 border border-slate-300 px-1.5 py-0.2 rounded text-[10px] font-semibold">${item.budget_category || 'หมวดทั่วไป'}</span>
+          </td>
+          <td class="py-2 px-2 font-bold text-sky-700 border-r border-slate-200 text-xs">${quarterStr}</td>
+          <td class="py-2 px-2 border-r border-slate-200">
+            <span class="bg-indigo-50 text-indigo-800 border border-indigo-200 px-2 py-0.5 rounded text-[11px] font-semibold whitespace-nowrap inline-block">
+              ${item.funding_source || 'ไม่ระบุ'}
+            </span>
+          </td>
+          <td class="py-2 px-2 text-right font-black text-slate-900 border-r border-slate-200 text-xs">${budgetFormatted} ฿</td>
+          <td class="py-2 px-2 border-r border-slate-200 font-semibold text-xs">${item.moo_no || '-'}</td>
+          <td class="py-2 px-2 text-left border-r border-slate-200 font-semibold text-xs">${item.village_name || '-'}</td>
+          <td class="py-2 px-2 border-r border-slate-200 font-bold text-xs" style="background-color: ${officerStyle.bg}; color: ${officerStyle.text}">
+            ${item.officer_in_charge || '-'}
+          </td>
+          <td class="p-1 border-r border-slate-200 font-bold text-slate-800 text-xs">${formatDateDMY(item.plan_start_date)}</td>
+          <td class="p-1 border-r border-slate-200 font-bold text-slate-800 text-xs">${formatDateDMY(item.plan_end_date)}</td>
+          ${monthCellsHtml}
+        </tr>`;
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    function exportCSV(mode = 'FULL') {
+      if (!allProjectsData || allProjectsData.length === 0) {
+        alert("ไม่มีข้อมูลสำหรับส่งออก");
+        return;
+      }
+
+      let csvStr = "\uFEFF";
+
+      if (mode === 'FULL') {
+        csvStr += "ลำดับ,ID โครงการ,ปีงบประมาณ,ไตรมาส,ชื่อโครงการ,รายละเอียดกิจกรรม,งาน,งบรายจ่าย,หมวดรายจ่าย,ประเภทรายจ่าย,แหล่งเงิน,หมู่ที่,ชื่อหมู่บ้าน,ช่างรับผิดชอบ,ผู้รับจ้าง,งบตั้งไว้,วงเงินสัญญา,เริ่มแผน (วัน/เดือน/ปี พ.ศ.),สิ้นสุดแผน (วัน/เดือน/ปี พ.ศ.),ขั้นตอนปัจจุบัน,กายภาพ (%)\n";
+        
+        allProjectsData.forEach((p, idx) => {
+          const detailEscaped = p.activity_detail ? p.activity_detail.replace(/"/g, '""') : '-';
+          csvStr += `"${idx + 1}","${p.id}","${p.fiscal_year}","${p.quarter || '-'}","${p.project_name}","${detailEscaped}","${p.work_group || '-'}","${p.budget_group || '-'}","${p.budget_category || '-'}","${p.budget_type || '-'}","${p.funding_source || '-'}","${p.moo_no}","${p.village_name}","${p.officer_in_charge || '-'}","${p.vendor_name || '-'}","${p.budget_amount}","${p.approved_amount || 0}","${formatDateDMY(p.plan_start_date)}","${formatDateDMY(p.plan_end_date)}","${p.current_status || 'ยังไม่ได้เริ่มดำเนินการ'}","${p.physical_progress || 0}%"\n`;
+        });
+      }
+
+      const fileName = `รายงานติดตามแผนปฏิบัติงาน_${new Date().toISOString().slice(0, 10)}.csv`;
+      const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function openInitialFormModal() {
+      document.getElementById('initialForm').reset();
+      document.getElementById('id').value = '';
+      document.getElementById('initialModalTitle').innerText = 'บันทึกข้อมูลตั้งต้นโครงการ';
+      initStaticDropdowns();
+      document.getElementById('initialModal').classList.remove('hidden');
+      document.getElementById('initialModal').classList.add('flex');
+    }
+
+    function closeInitialModal() {
+      document.getElementById('initialModal').classList.add('hidden');
+    }
+
+    function editInitialProjectById(projectId) {
+      const item = allProjectsData.find(p => String(p.id) === String(projectId));
+      if (!item) return;
+
+      document.getElementById('initialModalTitle').innerText = 'แก้ไขข้อมูลตั้งต้น (ID: ' + item.id + ')';
+      initStaticDropdowns();
+      
+      const fields = [
+        'id', 'fiscal_year', 'quarter', 'project_name', 'activity_detail', 'budget_amount', 
+        'moo_no', 'village_name', 'officer_in_charge', 'plan_start_date', 'plan_end_date', 
+        'work_group', 'budget_group', 'budget_category', 'budget_type', 'funding_source'
+      ];
+      fields.forEach(f => {
+        const el = document.getElementById(f);
+        if (el) el.value = item[f] || '';
+      });
+      document.getElementById('initialModal').classList.remove('hidden');
+      document.getElementById('initialModal').classList.add('flex');
+    }
+
+    async function confirmDeleteProject(projectId) {
+      if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบโครงการนี้ออกจากระบบ?')) {
+        try {
+          const res = await fetch(GAS_API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'DELETE_PROJECT', projectId: projectId, userRole: currentUserRole })
+          });
+          const result = await res.json();
+          if (result.success) {
+            showNotification("ลบโครงการเรียบร้อยแล้ว");
+            loadProjects();
+          } else { alert(result.message); }
+        } catch (err) { alert("เกิดข้อผิดพลาดในการลบ: " + err.message); }
+      }
+    }
+
+    async function openProgressModalById(projectId) {
+      const item = allProjectsData.find(p => String(p.id) === String(projectId));
+      if (!item) return;
+
+      document.getElementById('progress_id').value = item.id;
+      document.getElementById('progress_budget_amount').value = item.budget_amount;
+      document.getElementById('lbl_project_name').innerText = item.project_name;
+      document.getElementById('pdfFileInput').value = '';
+
+      const currentStepObj = getStepInfoByName(item.current_status);
+      const currentStepId = currentStepObj ? currentStepObj.id : 0;
+
+      STEPS_MASTER.filter(s => s.id > 0).forEach(step => {
+        const chk = document.getElementById(`step_${step.id}`);
+        if (chk) chk.checked = (currentStepId > 0 && step.id <= currentStepId);
+      });
+      recalculateSteps();
+
+      document.getElementById('contract_no').value = item.contract_no || '';
+      document.getElementById('vendor_name').value = item.vendor_name || '';
+      document.getElementById('approved_amount').value = item.approved_amount || '';
+      document.getElementById('disbursed_amount').value = item.disbursed_amount || '';
+      document.getElementById('contract_start_date').value = item.contract_start_date || '';
+      document.getElementById('contract_end_date').value = item.contract_end_date || '';
+
+      document.getElementById('progressModal').classList.remove('hidden');
+      document.getElementById('progressModal').classList.add('flex');
+
+      // Fetch files for modal list
+      loadModalFileList(item.id);
+    }
+
+    async function loadModalFileList(projectId) {
+      const container = document.getElementById('fileListContainer');
+      container.innerHTML = '<span class="text-slate-400">กำลังดึงรายการไฟล์...</span>';
+      try {
+        const res = await fetch(`${GAS_API_URL}?action=GET_PROJECT_FILES&projectId=${projectId}`);
+        const result = await res.json();
+        if (result.success && result.data.files) {
+          if (result.data.files.length === 0) {
+            container.innerHTML = '<span class="text-slate-400">ยังไม่มีไฟล์ PDF อัปโหลดไว้ในโฟลเดอร์นี้</span>';
+          } else {
+            let filesHtml = '';
+            result.data.files.forEach(f => {
+              let deleteFileBtn = currentUserRole === 'ADMIN' ? `<button type="button" onclick="deleteFile('${f.fileId}')" class="px-2 py-0.5 bg-rose-600 hover:bg-rose-500 text-white rounded text-[10px] font-bold me-1">ลบ</button>` : '';
+              filesHtml += `<div class="flex items-center justify-between p-1.5 bg-slate-50 rounded border border-slate-200">
+                <span class="font-bold text-slate-800 text-xs truncate max-w-[280px]"><i class="fa-solid fa-file-pdf text-rose-600 me-1"></i>${f.fileName}</span>
+                <div>
+                  ${deleteFileBtn}
+                  <a href="${f.fileUrl}" target="_blank" class="px-2 py-0.5 bg-sky-600 hover:bg-sky-500 text-white rounded text-[10px] font-bold">ดูไฟล์</a>
+                </div>
+              </div>`;
+            });
+            container.innerHTML = filesHtml;
+          }
+        }
+      } catch (err) {
+        container.innerHTML = '<span class="text-rose-500">ดึงข้อมูลไฟล์ไม่สำเร็จ</span>';
+      }
+    }
+
+    async function deleteFile(fileId) {
+      if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบไฟล์นี้จาก Google Drive?")) {
+        try {
+          const res = await fetch(GAS_API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'DELETE_FILE', fileId: fileId, userRole: currentUserRole })
+          });
+          const result = await res.json();
+          if (result.success) {
+            showNotification("ลบไฟล์เรียบร้อยแล้ว");
+            loadModalFileList(document.getElementById('progress_id').value);
+          } else { alert(result.message); }
+        } catch (err) { alert("เกิดข้อผิดพลาดในการลบไฟล์: " + err.message); }
+      }
+    }
+
+    function closeProgressModal() {
+      document.getElementById('progressModal').classList.add('hidden');
+    }
+
+    async function submitInitialForm() {
+      const form = document.getElementById('initialForm');
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+      const formData = {};
+      new FormData(form).forEach((value, key) => formData[key] = value);
+
+      try {
+        const res = await fetch(GAS_API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'SAVE_INITIAL', formData: formData })
+        });
+        const result = await res.json();
+        if (result.success) {
+          closeInitialModal();
+          showNotification("บันทึกข้อมูลโครงการเรียบร้อยแล้ว");
+          loadProjects();
+        } else { alert(result.message); }
+      } catch (err) { alert("เกิดข้อผิดพลาด: " + err.message); }
+    }
+
+    async function submitProgressForm() {
+      const form = document.getElementById('progressForm');
+      const formData = {};
+      new FormData(form).forEach((value, key) => formData[key] = value);
+
+      const fileInput = document.getElementById('pdfFileInput');
+      let fileData = null;
+
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const base64 = await convertFileToBase64(file);
+        fileData = { fileName: file.name, base64: base64 };
+      }
+
+      const btnSubmit = document.getElementById('btnSubmitProgress');
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>กำลังบันทึก...';
+
+      try {
+        const res = await fetch(GAS_API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'UPDATE_PROGRESS', formData: formData, fileData: fileData })
+        });
+        const result = await res.json();
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i>บันทึกอัปเดต';
+
+        if (result.success) {
+          closeProgressModal();
+          showNotification("ได้ทำการอัปเดตโครงการและไฟล์เอกสารเรียบร้อยแล้ว");
+          loadProjects();
+        } else { alert(result.message); }
+      } catch (err) {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i>บันทึกอัปเดต';
+        alert("เกิดข้อผิดพลาด: " + err.message);
+      }
+    }
+
+    function convertFileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    function filterTable() {
+      const kw = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+      const fy = document.getElementById('filterFiscalYear').value;
+      const officer = document.getElementById('filterOfficer').value;
+      const cat = document.getElementById('filterBudgetCategory').value;
+      const status = document.getElementById('filterStatus').value;
+
+      const filtered = allProjectsData.filter(item => {
+        const matchKw = kw === "" || 
+                        (item.project_name || '').toLowerCase().includes(kw) || 
+                        (item.activity_detail || '').toLowerCase().includes(kw) ||
+                        (item.village_name || '').toLowerCase().includes(kw) ||
+                        (item.officer_in_charge || '').toLowerCase().includes(kw) ||
+                        (item.vendor_name || '').toLowerCase().includes(kw);
+        const matchFy = fy === "" || String(item.fiscal_year) === fy;
+        const matchOfficer = officer === "" || String(item.officer_in_charge || '').trim() === officer.trim();
+        const matchCat = cat === "" || String(item.budget_category || '') === cat;
+        
+        let matchStatus = true;
+        const evalRes = evaluateSmartDelayStatus(item);
+
+        if (status === "ACTIVE") matchStatus = (!evalRes.isCompleted && !evalRes.isOverdue);
+        else if (status === "OVERDUE") matchStatus = evalRes.isOverdue;
+        else if (status === "CONTRACT") matchStatus = evalRes.isContractActive;
+        else if (status === "COMPLETED") matchStatus = evalRes.isCompleted;
+
+        return matchKw && matchFy && matchOfficer && matchCat && matchStatus;
+      });
+
+      renderTable(filtered);
+    }
+  </script>
+</body>
+</html>
