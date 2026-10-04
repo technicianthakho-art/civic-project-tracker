@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Project Tracker - ระบบติดตามแผนดำเนินงานโครงการ</title>
+  <title>ระบบติดตามแผนดำเนินงานโครงการ</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -71,34 +71,29 @@
   <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
     <div class="w-full px-4 h-16 flex items-center justify-between gap-3 py-2">
       
-      <!-- Brand Logo & Main Tabs -->
-      <div class="flex items-center gap-5">
-        <div class="flex items-center gap-2.5">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-md">
-            <i class="fa-solid fa-layer-group text-lg"></i>
-          </div>
-          <div>
-            <h1 class="font-black text-base md:text-lg text-slate-900 leading-tight">Smart Project Tracker</h1>
-            <p class="text-xs text-sky-700 font-bold tracking-tight uppercase">ระบบติดตามแผนดำเนินงานโครงการ</p>
-          </div>
+      <!-- System Title & Main Tabs -->
+      <div class="flex items-center gap-6">
+        <div>
+          <!-- เอา Smart Project Tracker และไอคอนออก แสดงเฉพาะชื่อระบบขนาดใหญ่โดดเด่น -->
+          <h1 class="font-black text-xl sm:text-2xl text-slate-900 leading-none tracking-tight">ระบบติดตามแผนดำเนินงานโครงการ</h1>
         </div>
 
         <!-- REORDERED NAVIGATION TABS -->
         <nav class="hidden md:flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-xl border border-slate-200">
           <!-- 1. ติดตามแผนปฏิบัติงาน -->
-          <button id="tab-btn-table" onclick="switchTab('table')" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-extrabold flex items-center gap-2 transition-all nav-btn-active">
+          <button id="tab-btn-table" onclick="switchTab('table')" class="tab-btn px-4 py-2 rounded-lg text-sm font-extrabold flex items-center gap-2 transition-all nav-btn-active">
             <i class="fa-solid fa-list-check"></i>
             <span>ติดตามแผนปฏิบัติงาน</span>
           </button>
           
           <!-- 2. แผนดำเนินงาน (Gantt) -->
-          <button id="tab-btn-gantt" onclick="switchTab('gantt')" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-extrabold flex items-center gap-2 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60">
+          <button id="tab-btn-gantt" onclick="switchTab('gantt')" class="tab-btn px-4 py-2 rounded-lg text-sm font-extrabold flex items-center gap-2 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60">
             <i class="fa-solid fa-chart-gantt"></i>
             <span>แผนดำเนินงาน</span>
           </button>
 
           <!-- 3. รายงานสถิติ BI -->
-          <button id="tab-btn-dash" onclick="switchTab('dash')" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-extrabold flex items-center gap-2 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60">
+          <button id="tab-btn-dash" onclick="switchTab('dash')" class="tab-btn px-4 py-2 rounded-lg text-sm font-extrabold flex items-center gap-2 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60">
             <i class="fa-solid fa-chart-pie"></i>
             <span>รายงานสถิติ BI</span>
           </button>
@@ -107,18 +102,18 @@
 
       <!-- Action Tools & Status -->
       <div class="flex items-center gap-2.5">
-        <div id="liveClock" class="hidden lg:flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+        <div id="liveClock" class="hidden lg:flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
           <i class="fa-regular fa-clock text-sky-600"></i>
           <span>อัปเดต: -</span>
         </div>
 
-        <button onclick="loadProjects()" class="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-1.5 border border-slate-300 shadow-sm transition">
+        <button onclick="loadProjects(true)" class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-extrabold flex items-center gap-1.5 border border-slate-300 shadow-sm transition">
           <i class="fa-solid fa-rotate text-sky-600"></i>
           <span class="hidden sm:inline">รีเฟรช</span>
         </button>
 
         <div class="relative group">
-          <button class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+          <button class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition">
             <i class="fa-solid fa-file-csv"></i>
             <span class="hidden sm:inline">ส่งออก CSV</span>
             <i class="fa-solid fa-chevron-down text-[10px] opacity-75"></i>
@@ -136,12 +131,12 @@
         </div>
 
         <!-- AUTH LOGIN BUTTON -->
-        <button id="authBtn" onclick="openLoginModal()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-white rounded-lg text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition">
+        <button id="authBtn" onclick="openLoginModal()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-white rounded-lg text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition">
           <i class="fa-solid fa-right-to-bracket"></i>
           <span id="authBtnText">เข้าสู่ระบบ</span>
         </button>
 
-        <button id="btnAddProject" onclick="openInitialFormModal()" class="admin-only hidden px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+        <button id="btnAddProject" onclick="openInitialFormModal()" class="admin-only hidden px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition">
           <i class="fa-solid fa-plus"></i>
           <span>เพิ่มโครงการ</span>
         </button>
@@ -157,44 +152,44 @@
       
       <!-- COMPACT KPI RIBBON -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div onclick="filterByCard('ALL')" class="bento-card rounded-xl p-3 cursor-pointer transition hover:border-sky-400 flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-sm font-bold">
+        <div onclick="filterByCard('ALL')" class="bento-card rounded-xl p-3.5 cursor-pointer transition hover:border-sky-400 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center text-base font-bold">
               <i class="fa-solid fa-folder-open"></i>
             </div>
-            <span class="text-xs font-bold text-slate-700">โครงการทั้งหมด</span>
+            <span class="text-sm font-extrabold text-slate-800">โครงการทั้งหมด</span>
           </div>
-          <span id="mini_kpi_total" class="text-xl font-black text-slate-900">0</span>
+          <span id="mini_kpi_total" class="text-2xl font-black text-slate-900">0</span>
         </div>
 
-        <div onclick="filterByCard('ACTIVE')" class="bento-card rounded-xl p-3 cursor-pointer transition hover:border-amber-400 flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold">
+        <div onclick="filterByCard('ACTIVE')" class="bento-card rounded-xl p-3.5 cursor-pointer transition hover:border-amber-400 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-base font-bold">
               <i class="fa-solid fa-spinner"></i>
             </div>
-            <span class="text-xs font-bold text-slate-700">อยู่ระหว่างดำเนินการ</span>
+            <span class="text-sm font-extrabold text-slate-800">อยู่ระหว่างดำเนินการ</span>
           </div>
-          <span id="mini_kpi_active" class="text-xl font-black text-slate-900">0</span>
+          <span id="mini_kpi_active" class="text-2xl font-black text-slate-900">0</span>
         </div>
 
-        <div onclick="filterByCard('COMPLETED')" class="bento-card rounded-xl p-3 cursor-pointer transition hover:border-emerald-400 flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">
+        <div onclick="filterByCard('COMPLETED')" class="bento-card rounded-xl p-3.5 cursor-pointer transition hover:border-emerald-400 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-base font-bold">
               <i class="fa-solid fa-circle-check"></i>
             </div>
-            <span class="text-xs font-bold text-slate-700">แล้วเสร็จสมบูรณ์</span>
+            <span class="text-sm font-extrabold text-slate-800">แล้วเสร็จสมบูรณ์</span>
           </div>
-          <span id="mini_kpi_completed" class="text-xl font-black text-slate-900">0</span>
+          <span id="mini_kpi_completed" class="text-2xl font-black text-slate-900">0</span>
         </div>
 
-        <div onclick="filterByCard('OVERDUE')" class="bento-card rounded-xl p-3 cursor-pointer transition hover:border-rose-400 flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-sm font-bold">
+        <div onclick="filterByCard('OVERDUE')" class="bento-card rounded-xl p-3.5 cursor-pointer transition hover:border-rose-400 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center text-base font-bold">
               <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
-            <span class="text-xs font-bold text-slate-700">เกินกำหนดเวลา</span>
+            <span class="text-sm font-extrabold text-slate-800">เกินกำหนดเวลา</span>
           </div>
-          <span id="mini_kpi_overdue" class="text-xl font-black text-slate-900">0</span>
+          <span id="mini_kpi_overdue" class="text-2xl font-black text-slate-900">0</span>
         </div>
       </div>
 
@@ -204,26 +199,26 @@
         <!-- Filters Toolbar -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
           <div class="lg:col-span-2 relative">
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="ค้นหาชื่อโครงการ, หมู่บ้าน, ช่าง..." class="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-600 focus:bg-white transition">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="ค้นหาชื่อโครงการ, หมู่บ้าน, ช่าง..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-600 focus:bg-white transition">
           </div>
 
-          <select id="filterFiscalYear" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-bold focus:outline-none focus:border-sky-600">
+          <select id="filterFiscalYear" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
             <option value="">-- ทุกปีงบประมาณ --</option>
             <option value="2568">ปีงบประมาณ 2568</option>
             <option value="2569">ปีงบประมาณ 2569</option>
             <option value="2570" selected>ปีงบประมาณ 2570</option>
           </select>
 
-          <select id="filterOfficer" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-bold focus:outline-none focus:border-sky-600">
+          <select id="filterOfficer" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
             <option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>
           </select>
 
-          <select id="filterBudgetCategory" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-bold focus:outline-none focus:border-sky-600">
+          <select id="filterBudgetCategory" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
             <option value="">-- ทุกหมวดรายจ่าย --</option>
           </select>
 
-          <select id="filterStatus" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-bold focus:outline-none focus:border-sky-600">
+          <select id="filterStatus" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
             <option value="">-- ทุกสถานะความก้าวหน้า --</option>
             <option value="ACTIVE">🟡 อยู่ระหว่างดำเนินการ</option>
             <option value="OVERDUE">🟠 เกินระยะเวลาตามแผนงาน</option>
@@ -232,25 +227,26 @@
           </select>
         </div>
 
-        <!-- READABLE COMPACT TABLE (ปรับขนาดความกว้าง & ลด Spacing แถว) -->
+        <!-- NEW SEPARATED TABLE WITH INCREASED FONT SIZE & BALANCED COLUMNS -->
         <div class="overflow-x-auto rounded-lg border border-slate-200 max-h-[75vh]">
           <table class="w-full text-left border-collapse">
-            <thead class="sticky top-0 bg-slate-900 text-white text-xs uppercase tracking-wider font-bold z-10">
+            <thead class="sticky top-0 bg-slate-900 text-white text-sm uppercase tracking-wider font-extrabold z-10">
               <tr>
-                <th class="py-2.5 px-2 text-center w-10 border-r border-slate-800">#</th>
-                <!-- ปรับลดความกว้างชื่อโครงการเหลือ 250px -->
-                <th class="py-2.5 px-2.5 border-r border-slate-800 min-w-[250px]">ชื่อโครงการ / ที่ตั้ง</th>
-                <!-- ขยายความกว้างช่องงบประมาณเป็น 270px รองรับป้ายช่างและแหล่งเงิน -->
-                <th class="py-2.5 px-2.5 border-r border-slate-800 min-w-[270px]">งบตั้งไว้ / สัญญา / ช่าง / แหล่งเงิน</th>
-                <th class="py-2.5 px-2.5 border-r border-slate-800 min-w-[220px]">ช่วงเวลาตามแผนงาน / สัญญา</th>
-                <th class="py-2.5 px-2.5 border-r border-slate-800 min-w-[180px]">ขั้นตอนปัจจุบัน</th>
-                <th class="py-2.5 px-2.5 text-center w-24 border-r border-slate-800">กายภาพ (%)</th>
-                <th class="py-2.5 px-2 text-center w-24 auth-only hidden">จัดการ</th>
+                <th class="py-3 px-2 text-center w-12 border-r border-slate-800">#</th>
+                <th class="py-3 px-3 border-r border-slate-800 min-w-[280px]">ชื่อโครงการ / ที่ตั้ง</th>
+                <!-- แยกงบตั้งไว้ / สัญญา ออกมาอยู่อีกคอลัมน์ -->
+                <th class="py-3 px-3 border-r border-slate-800 min-w-[180px]">งบตั้งไว้ / สัญญา</th>
+                <!-- คอลัมน์สร้างใหม่: ช่างผู้รับผิดชอบ / แหล่งเงิน -->
+                <th class="py-3 px-3 border-r border-slate-800 min-w-[180px]">ช่าง / แหล่งเงิน</th>
+                <th class="py-3 px-3 border-r border-slate-800 min-w-[220px]">ช่วงเวลาตามแผนงาน / สัญญา</th>
+                <th class="py-3 px-3 border-r border-slate-800 min-w-[190px]">ขั้นตอนปัจจุบัน</th>
+                <th class="py-3 px-3 text-center w-28 border-r border-slate-800">กายภาพ (%)</th>
+                <th class="py-3 px-2 text-center w-24 auth-only hidden">จัดการ</th>
               </tr>
             </thead>
-            <tbody id="projectTableBody" class="divide-y divide-slate-200 text-xs bg-white">
+            <tbody id="projectTableBody" class="divide-y divide-slate-200 text-sm bg-white font-medium">
               <tr>
-                <td colspan="7" class="py-12 text-center text-slate-400 font-bold">
+                <td colspan="8" class="py-12 text-center text-slate-400 font-bold">
                   <i class="fa-solid fa-circle-notch fa-spin text-2xl me-2 text-sky-600"></i>กำลังโหลดข้อมูลโครงการ...
                 </td>
               </tr>
@@ -265,19 +261,19 @@
     <section id="tab-content-gantt" class="hidden space-y-3">
       <div class="light-card rounded-xl p-3 space-y-3">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <h2 class="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2">
+          <h2 class="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
             <i class="fa-solid fa-calendar-days text-sky-600"></i>
             <span>ตารางบริหารและวางแผนดำเนินงานโครงการ (Gantt Chart Interactive)</span>
           </h2>
           <div class="flex items-center gap-2 flex-wrap">
-            <button onclick="sortGanttBoard()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+            <button onclick="sortGanttBoard()" class="px-3.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-extrabold flex items-center gap-1.5 transition shadow-sm">
               <i class="fa-solid fa-arrow-down-short-wide"></i>
               <span>จัดเรียงตามวัน</span>
             </button>
-            <select id="ganttFilterFunding" onchange="renderGanttBoard(false)" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-sky-700 font-bold focus:outline-none">
+            <select id="ganttFilterFunding" onchange="renderGanttBoard(false)" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-sky-700 font-extrabold focus:outline-none">
               <option value="">-- ทุกแหล่งเงิน --</option>
             </select>
-            <select id="ganttFilterFy" onchange="renderGanttBoard(false)" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-sky-700 font-bold focus:outline-none">
+            <select id="ganttFilterFy" onchange="renderGanttBoard(false)" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-sky-700 font-extrabold focus:outline-none">
               <option value="">-- ทุกปีงบประมาณ --</option>
               <option value="2568">2568</option>
               <option value="2569">2569</option>
@@ -288,20 +284,20 @@
 
         <div class="overflow-x-auto rounded-lg border border-slate-200 max-h-[75vh]">
           <table class="w-full text-center border-collapse text-xs" id="ganttTable">
-            <thead class="sticky top-0 bg-slate-900 text-white font-bold z-10">
+            <thead class="sticky top-0 bg-slate-900 text-white font-extrabold z-10">
               <tr>
                 <th rowspan="2" class="p-2 border-r border-slate-700 w-10">#</th>
-                <th rowspan="2" class="p-2 border-r border-slate-700 text-left min-w-[240px]">ชื่อโครงการ</th>
-                <th rowspan="2" class="p-2 border-r border-slate-700 w-20">ไตรมาส</th>
+                <th rowspan="2" class="p-2 border-r border-slate-700 text-left min-w-[250px]">ชื่อโครงการ</th>
+                <th rowspan="2" class="p-2 border-r border-slate-700 w-24">ไตรมาส</th>
                 <th rowspan="2" class="p-2 border-r border-slate-700 w-32">แหล่งเงิน</th>
-                <th rowspan="2" class="p-2 border-r border-slate-700 w-24">งบประมาณ</th>
-                <th rowspan="2" class="p-2 border-r border-slate-700 w-10">หมู่</th>
-                <th rowspan="2" class="p-2 border-r border-slate-700 w-20">หมู่บ้าน</th>
-                <th rowspan="2" class="p-2 border-r border-slate-700 w-20">ช่าง</th>
+                <th rowspan="2" class="p-2 border-r border-slate-700 w-28">งบประมาณ</th>
+                <th rowspan="2" class="p-2 border-r border-slate-700 w-12">หมู่</th>
+                <th rowspan="2" class="p-2 border-r border-slate-700 w-24">หมู่บ้าน</th>
+                <th rowspan="2" class="p-2 border-r border-slate-700 w-24">ช่าง</th>
                 <th colspan="2" class="p-1 border-r border-slate-700">แผนงาน</th>
                 <th colspan="12" class="p-1 bg-slate-800">เดือน (ปีงบประมาณ)</th>
               </tr>
-              <tr class="text-[11px]">
+              <tr class="text-xs">
                 <th class="p-1.5 border-r border-slate-700 w-24">วันเริ่ม</th>
                 <th class="p-1.5 border-r border-slate-700 w-24">วันสิ้นสุด</th>
                 <th class="w-7 p-1 bg-amber-600 text-white border-r border-slate-700">ต.ค.</th>
@@ -326,17 +322,17 @@
       </div>
     </section>
 
-    <!-- TAB 3: EXECUTIVE BI DASHBOARD (COMPREHENSIVE ANALYTICS) -->
+    <!-- TAB 3: EXECUTIVE BI DASHBOARD -->
     <section id="tab-content-dash" class="hidden space-y-3">
       
       <div class="light-card rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-l-4 border-l-sky-600 bg-white">
         <div class="flex items-center gap-2">
-          <i class="fa-solid fa-chart-pie text-sky-600 text-lg"></i>
-          <h2 class="font-extrabold text-sm sm:text-base text-slate-900">Executive BI Strategic Analytics Board</h2>
+          <i class="fa-solid fa-chart-pie text-sky-600 text-xl"></i>
+          <h2 class="font-black text-base sm:text-lg text-slate-900">Executive BI Strategic Analytics Board</h2>
         </div>
         <div class="flex items-center gap-2">
-          <span class="text-xs text-slate-600 font-bold">ปีงบประมาณ:</span>
-          <select id="dashFilterFiscalYear" onchange="renderDashboardCharts()" class="bg-slate-50 border border-slate-300 text-xs text-sky-700 font-bold rounded-lg px-2.5 py-1 focus:outline-none">
+          <span class="text-xs text-slate-700 font-extrabold">ปีงบประมาณ:</span>
+          <select id="dashFilterFiscalYear" onchange="renderDashboardCharts()" class="bg-slate-50 border border-slate-300 text-xs text-sky-700 font-extrabold rounded-lg px-2.5 py-1 focus:outline-none">
             <option value="">-- ทุกปีงบประมาณ --</option>
             <option value="2568">2568</option>
             <option value="2569">2569</option>
@@ -348,27 +344,27 @@
       <!-- Financial Metrics Grid -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div class="bento-card rounded-xl p-3.5 border-l-4 border-l-sky-600">
-          <span class="text-xs text-slate-500 font-bold block">งบประมาณรวมตั้งไว้</span>
-          <p id="dash_total_budget" class="text-lg sm:text-xl font-black text-sky-800 mt-1">0 ฿</p>
+          <span class="text-xs text-slate-600 font-extrabold block">งบประมาณรวมตั้งไว้</span>
+          <p id="dash_total_budget" class="text-lg sm:text-2xl font-black text-sky-800 mt-1">0 ฿</p>
         </div>
         <div class="bento-card rounded-xl p-3.5 border-l-4 border-l-indigo-600">
-          <span class="text-xs text-slate-500 font-bold block">วงเงินสัญญาจัดซื้อจัดจ้าง</span>
-          <p id="dash_approved_budget" class="text-lg sm:text-xl font-black text-indigo-800 mt-1">0 ฿</p>
+          <span class="text-xs text-slate-600 font-extrabold block">วงเงินสัญญาจัดซื้อจัดจ้าง</span>
+          <p id="dash_approved_budget" class="text-lg sm:text-2xl font-black text-indigo-800 mt-1">0 ฿</p>
         </div>
         <div class="bento-card rounded-xl p-3.5 border-l-4 border-l-emerald-600">
-          <span class="text-xs text-slate-500 font-bold block">เบิกจ่ายแล้วสะสม</span>
-          <p id="dash_disbursed_budget" class="text-lg sm:text-xl font-black text-emerald-800 mt-1">0 ฿</p>
+          <span class="text-xs text-slate-600 font-extrabold block">เบิกจ่ายแล้วสะสม</span>
+          <p id="dash_disbursed_budget" class="text-lg sm:text-2xl font-black text-emerald-800 mt-1">0 ฿</p>
         </div>
         <div class="bento-card rounded-xl p-3.5 border-l-4 border-l-amber-600">
-          <span class="text-xs text-slate-500 font-bold block">เงินประหยัดได้ (คืนงบกลาง)</span>
-          <p id="dash_savings_budget" class="text-lg sm:text-xl font-black text-amber-800 mt-1">0 ฿</p>
+          <span class="text-xs text-slate-600 font-extrabold block">เงินประหยัดได้ (คืนงบกลาง)</span>
+          <p id="dash_savings_budget" class="text-lg sm:text-2xl font-black text-amber-800 mt-1">0 ฿</p>
         </div>
       </div>
 
-      <!-- Charts Section (360° Comprehensive BI) -->
+      <!-- Charts Section -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <div class="light-card rounded-xl p-3.5 lg:col-span-2">
-          <h3 class="text-xs font-extrabold text-slate-800 mb-2.5 flex items-center gap-2">
+          <h3 class="text-xs font-black text-slate-800 mb-2.5 flex items-center gap-2">
             <i class="fa-solid fa-chart-line text-sky-600"></i>
             <span>แนวโน้มผลเบิกจ่ายงบประมาณสะสม (รายเดือน)</span>
           </h3>
@@ -378,7 +374,7 @@
         </div>
 
         <div class="light-card rounded-xl p-3.5">
-          <h3 class="text-xs font-extrabold text-slate-800 mb-2.5 flex items-center gap-2">
+          <h3 class="text-xs font-black text-slate-800 mb-2.5 flex items-center gap-2">
             <i class="fa-solid fa-chart-pie text-sky-600"></i>
             <span>สัดส่วนสถานะสุขภาพโครงการ</span>
           </h3>
@@ -390,7 +386,7 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <div class="light-card rounded-xl p-3.5">
-          <h3 class="text-xs font-extrabold text-slate-800 mb-2.5 flex items-center gap-2">
+          <h3 class="text-xs font-black text-slate-800 mb-2.5 flex items-center gap-2">
             <i class="fa-solid fa-compass text-sky-600"></i>
             <span>มิติจัดสรรตามงบรายจ่าย (Radar)</span>
           </h3>
@@ -400,7 +396,7 @@
         </div>
 
         <div class="light-card rounded-xl p-3.5">
-          <h3 class="text-xs font-extrabold text-slate-800 mb-2.5 flex items-center gap-2">
+          <h3 class="text-xs font-black text-slate-800 mb-2.5 flex items-center gap-2">
             <i class="fa-solid fa-bars-progress text-sky-600"></i>
             <span>ความก้าวหน้ากายภาพเฉลี่ย (%) แยกตามหมวด</span>
           </h3>
@@ -410,7 +406,7 @@
         </div>
 
         <div class="light-card rounded-xl p-3.5">
-          <h3 class="text-xs font-extrabold text-slate-800 mb-2.5 flex items-center gap-2">
+          <h3 class="text-xs font-black text-slate-800 mb-2.5 flex items-center gap-2">
             <i class="fa-solid fa-wallet text-sky-600"></i>
             <span>สรุปสถิติแยกตามแหล่งเงินงบประมาณ</span>
           </h3>
@@ -425,7 +421,7 @@
                 </tr>
               </thead>
               <tbody id="fundingSummaryTableBody" class="divide-y divide-slate-100 bg-white">
-                <tr><td colspan="4" class="p-3 text-center text-slate-400">กำลังโหลด...</td></tr>
+                <tr><td colspan="4" class="p-2 text-center text-slate-400">กำลังโหลด...</td></tr>
               </tbody>
             </table>
           </div>
@@ -484,7 +480,7 @@
   <div id="summaryModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden justify-end">
     <div class="drawer-slide bg-white border-l border-slate-200 max-w-xl w-full h-full overflow-y-auto p-5 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-        <h3 class="font-extrabold text-base text-sky-700 flex items-center gap-2">
+        <h3 class="font-black text-lg text-sky-700 flex items-center gap-2">
           <i class="fa-solid fa-file-contract"></i>
           <span>รายละเอียดข้อมูลโครงการเชิงลึก</span>
         </h3>
@@ -500,7 +496,7 @@
   <div id="initialModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
     <div class="light-card rounded-2xl max-w-2xl w-full p-5 space-y-4 my-6 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-        <h3 id="initialModalTitle" class="font-extrabold text-base text-sky-700">บันทึกข้อมูลตั้งต้นโครงการ</h3>
+        <h3 id="initialModalTitle" class="font-black text-base text-sky-700">บันทึกข้อมูลตั้งต้นโครงการ</h3>
         <button onclick="closeInitialModal()" class="text-slate-400 hover:text-slate-700 text-base"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form id="initialForm" class="space-y-3 text-xs">
@@ -584,11 +580,11 @@
     </div>
   </div>
 
-  <!-- PROGRESS & FILE MANAGEMENT MODAL (NO SCROLL, 2 COLUMNS, CONDITIONAL PDF) -->
+  <!-- PROGRESS & FILE MANAGEMENT MODAL (VERTICAL ORDERING 1-4 LEFT / 5-8 RIGHT) -->
   <div id="progressModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
     <div class="light-card rounded-2xl max-w-2xl w-full p-5 space-y-3.5 my-6 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
-        <h3 class="font-extrabold text-base text-emerald-700"><i class="fa-solid fa-list-check me-2"></i>อัปเดตขั้นตอนความก้าวหน้า & เอกสาร PDF</h3>
+        <h3 class="font-black text-base text-emerald-700"><i class="fa-solid fa-list-check me-2"></i>อัปเดตขั้นตอนความก้าวหน้า & เอกสาร PDF</h3>
         <button onclick="closeProgressModal()" class="text-slate-400 hover:text-slate-700 text-base"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
@@ -599,13 +595,19 @@
         <input type="hidden" id="physical_progress" name="physical_progress">
 
         <div class="p-2.5 bg-sky-50 border border-sky-200 rounded-xl text-sky-900">
-          <strong>โครงการ:</strong> <span id="lbl_project_name" class="font-extrabold text-slate-900 text-xs me-2">-</span>
+          <strong>โครงการ:</strong> <span id="lbl_project_name" class="font-black text-slate-900 text-sm me-2">-</span>
         </div>
 
-        <!-- 8 STEPS GRID (2 COLUMNS, NO SCROLL) WITH DATES FOR STEP 7 & 8 -->
+        <!-- 8 STEPS GRID REORDERED VERTICALLY (1-4 LEFT COLUMN, 5-8 RIGHT COLUMN) -->
         <div class="space-y-1.5">
-          <span class="font-bold text-sky-800 block text-xs"><i class="fa-solid fa-square-check me-1"></i>ติ๊กเลือกขั้นตอนที่เรียบร้อยแล้ว (8 ขั้นตอน)</span>
-          <div id="stepsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+          <span class="font-extrabold text-sky-800 block text-xs"><i class="fa-solid fa-square-check me-1"></i>ติ๊กเลือกขั้นตอนที่เรียบร้อยแล้ว (8 ขั้นตอน)</span>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <!-- ฝั่งซ้าย: ขั้นตอนที่ 1 ถึง 4 -->
+            <div id="stepsContainerLeft" class="space-y-2"></div>
+            <!-- ฝั่งขวา: ขั้นตอนที่ 5 ถึง 8 -->
+            <div id="stepsContainerRight" class="space-y-2"></div>
+          </div>
         </div>
 
         <!-- CONTRACT & FINANCIAL -->
@@ -621,7 +623,7 @@
           </div>
         </div>
 
-        <!-- CONDITIONAL DRIVE PDF UPLOAD SECTION (HIDDEN BY DEFAULT, APPEARS ONLY WHEN STEP 8 IS CHECKED) -->
+        <!-- CONDITIONAL DRIVE PDF UPLOAD SECTION (HIDDEN BY DEFAULT) -->
         <div id="driveUploadSection" class="hidden p-3 bg-emerald-50/80 border border-emerald-300 rounded-xl space-y-2">
           <div class="flex items-center justify-between">
             <span class="font-extrabold text-emerald-900 block text-xs"><i class="fa-solid fa-file-pdf me-1 text-rose-600"></i>จัดเก็บไฟล์โครงการ PDF (บังคับแนบเมื่อตรวจรับงานเรียบร้อย)</span>
@@ -762,9 +764,20 @@
     window.onload = function() {
       checkStoredAuthSession();
       updateLiveClock();
+
+      // FAST CLIENT-SIDE CACHE: ดึงข้อมูลจาก LocalStorage ขึ้นโชว์ทันที
+      const cachedProjects = localStorage.getItem('PROJECTS_CACHE_DATA');
+      if (cachedProjects) {
+        try {
+          allProjectsData = JSON.parse(cachedProjects);
+          updateMiniKpiCards(allProjectsData);
+          filterTable();
+        } catch(e) { console.error("Cache Read Error:", e); }
+      }
+
       loadMasterData();
-      loadProjects();
-      renderStepsCheckboxes();
+      loadProjects(false); // แอบโหลดข้อมูลสดในเบื้องหลัง
+      renderStepsCheckboxesVertical();
     };
 
     function checkStoredAuthSession() {
@@ -1027,17 +1040,23 @@
       }
     }
 
-    async function loadProjects() {
+    async function loadProjects(isManualRefresh = false) {
       try {
         const res = await fetch(GAS_API_URL);
         const result = await res.json();
         allProjectsData = result.data || [];
+        
+        // Save to LocalStorage for ultra-fast next load
+        localStorage.setItem('PROJECTS_CACHE_DATA', JSON.stringify(allProjectsData));
+
         updateLiveClock();
         populateDynamicDropdownFilters(allProjectsData);
         updateMiniKpiCards(allProjectsData);
         filterTable();
-        renderDashboardCharts();
-        renderGanttBoard(true);
+
+        if (isManualRefresh) {
+          showNotification("อัปเดตข้อมูลโครงการล่าสุดเรียบร้อยแล้ว");
+        }
       } catch (err) {
         console.error("Projects Fetch Error:", err);
       }
@@ -1062,28 +1081,40 @@
       document.getElementById('mini_kpi_overdue').innerText = overdue;
     }
 
-    // 2-COLUMN GRID STEPS WITH DATE INPUTS FOR STEP 7 & STEP 8
-    function renderStepsCheckboxes() {
-      const container = document.getElementById('stepsContainer');
-      let html = '';
+    // RENDER STEPS REORDERED VERTICALLY: LEFT COLUMN (1-4), RIGHT COLUMN (5-8)
+    function renderStepsCheckboxesVertical() {
+      const containerLeft = document.getElementById('stepsContainerLeft');
+      const containerRight = document.getElementById('stepsContainerRight');
+      
+      let htmlLeft = '';
+      let htmlRight = '';
+
       STEPS_MASTER.filter(s => s.id > 0).forEach(step => {
         let dateFieldHtml = '';
         if (step.id === 7) {
-          dateFieldHtml = `<div class="mt-1 flex items-center gap-1.5"><span class="text-[10px] font-bold text-slate-500">วันที่ส่งมอบ:</span><input type="date" id="step_7_date" name="step_7_date" class="bg-white border border-slate-300 rounded px-1.5 py-0.5 text-[10px] text-slate-800 font-bold"></div>`;
+          dateFieldHtml = `<div class="mt-1 flex items-center gap-1.5"><span class="text-[11px] font-bold text-slate-600">วันที่ส่งมอบ:</span><input type="date" id="step_7_date" name="step_7_date" class="bg-white border border-slate-300 rounded px-1.5 py-0.5 text-xs text-slate-800 font-extrabold"></div>`;
         } else if (step.id === 8) {
-          dateFieldHtml = `<div class="mt-1 flex items-center gap-1.5"><span class="text-[10px] font-bold text-slate-500">วันที่ตรวจรับ:</span><input type="date" id="step_8_date" name="step_8_date" class="bg-white border border-slate-300 rounded px-1.5 py-0.5 text-[10px] text-slate-800 font-bold"></div>`;
+          dateFieldHtml = `<div class="mt-1 flex items-center gap-1.5"><span class="text-[11px] font-bold text-slate-600">วันที่ตรวจรับ:</span><input type="date" id="step_8_date" name="step_8_date" class="bg-white border border-slate-300 rounded px-1.5 py-0.5 text-xs text-slate-800 font-extrabold"></div>`;
         }
 
-        html += `
-        <div class="p-2 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-          <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
-            <input class="step-checkbox rounded bg-white border-slate-300 text-sky-600 focus:ring-0" type="checkbox" id="step_${step.id}" value="${step.name}" data-id="${step.id}" data-pct="${step.pct}" onchange="recalculateSteps()">
+        const stepCardHtml = `
+        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+          <label class="flex items-center gap-2.5 cursor-pointer font-extrabold text-slate-800 text-xs sm:text-sm">
+            <input class="step-checkbox rounded bg-white border-slate-300 text-sky-600 focus:ring-0 w-4 h-4" type="checkbox" id="step_${step.id}" value="${step.name}" data-id="${step.id}" data-pct="${step.pct}" onchange="recalculateSteps()">
             <span>${step.name}</span>
           </label>
           ${dateFieldHtml}
         </div>`;
+
+        if (step.id <= 4) {
+          htmlLeft += stepCardHtml;
+        } else {
+          htmlRight += stepCardHtml;
+        }
       });
-      container.innerHTML = html;
+
+      containerLeft.innerHTML = htmlLeft;
+      containerRight.innerHTML = htmlRight;
     }
 
     function recalculateSteps() {
@@ -1113,11 +1144,11 @@
       }
     }
 
-    /* COMPACT TABLE RENDER WITH EXCLUSIVE HIGHLIGHTING (COMPLETED = GREEN, OVERDUE = RED) */
+    /* RENDER TABLE WITH SEPARATED COLUMNS & HIGHER FONT CONTRAST */
     function renderTable(data) {
       const tbody = document.getElementById('projectTableBody');
       if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="py-12 text-center text-slate-400 font-bold"><i class="fa-solid fa-folder-open me-2"></i>ไม่พบข้อมูลโครงการตามเงื่อนไขที่เลือก</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="py-12 text-center text-slate-400 font-bold"><i class="fa-solid fa-folder-open me-2"></i>ไม่พบข้อมูลโครงการตามเงื่อนไขที่เลือก</td></tr>';
         return;
       }
 
@@ -1138,14 +1169,14 @@
         let datesInfo = '';
         if (item.plan_start_date && item.plan_end_date) {
           let overdueTag = evalRes.isOverdue ? `<span class="bg-rose-100 text-rose-800 border border-rose-300 px-1.5 py-0.2 rounded text-[10px] font-black ms-1 whitespace-nowrap">เกินแผน ${evalRes.days} วัน</span>` : '';
-          datesInfo += `<div class="text-[11px] text-slate-800 font-bold leading-tight"><i class="fa-regular fa-calendar-check text-sky-600 me-1"></i><strong>แผน:</strong> ${formatDateDMY(item.plan_start_date)} - ${formatDateDMY(item.plan_end_date)}${overdueTag}</div>`;
+          datesInfo += `<div class="text-xs text-slate-900 font-bold leading-tight"><i class="fa-regular fa-calendar-check text-sky-600 me-1"></i><strong>แผน:</strong> ${formatDateDMY(item.plan_start_date)} - ${formatDateDMY(item.plan_end_date)}${overdueTag}</div>`;
         } else {
-          datesInfo += `<div class="text-[11px] text-slate-400 font-semibold leading-tight"><i class="fa-regular fa-calendar me-1"></i>แผน: ยังไม่ระบุ</div>`;
+          datesInfo += `<div class="text-xs text-slate-400 font-semibold leading-tight"><i class="fa-regular fa-calendar me-1"></i>แผน: ยังไม่ระบุ</div>`;
         }
 
         if (item.contract_start_date && item.contract_end_date) {
           let contractStatusTag = evalRes.isContractActive ? `<span class="bg-sky-100 text-sky-800 border border-sky-300 px-1.5 py-0.2 rounded text-[10px] font-black ms-1 whitespace-nowrap">ตามสัญญา</span>` : '';
-          datesInfo += `<div class="text-[10px] text-slate-600 mt-1 font-semibold leading-tight"><i class="fa-solid fa-file-contract me-1"></i><strong>สัญญา:</strong> ${formatDateDMY(item.contract_start_date)} - ${formatDateDMY(item.contract_end_date)}${contractStatusTag}</div>`;
+          datesInfo += `<div class="text-[11px] text-slate-700 mt-1 font-bold leading-tight"><i class="fa-solid fa-file-contract me-1"></i><strong>สัญญา:</strong> ${formatDateDMY(item.contract_start_date)} - ${formatDateDMY(item.contract_end_date)}${contractStatusTag}</div>`;
         }
 
         let authBtns = '';
@@ -1154,13 +1185,13 @@
           let deleteBtn = '';
 
           if (currentUserRole === 'ADMIN') {
-            editInitBtn = `<button onclick="editInitialProjectById('${item.id}')" class="p-1 bg-slate-100 hover:bg-slate-200 text-sky-700 rounded text-[10px] border border-slate-300" title="แก้ไขข้อมูลตั้งต้น"><i class="fa-solid fa-pen"></i></button>`;
-            deleteBtn = `<button onclick="confirmDeleteProject('${item.id}')" class="p-1 bg-slate-100 hover:bg-slate-200 text-rose-700 rounded text-[10px] border border-slate-300" title="ลบโครงการ"><i class="fa-solid fa-trash"></i></button>`;
+            editInitBtn = `<button onclick="editInitialProjectById('${item.id}')" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-sky-700 rounded text-xs border border-slate-300" title="แก้ไขข้อมูลตั้งต้น"><i class="fa-solid fa-pen"></i></button>`;
+            deleteBtn = `<button onclick="confirmDeleteProject('${item.id}')" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-rose-700 rounded text-xs border border-slate-300" title="ลบโครงการ"><i class="fa-solid fa-trash"></i></button>`;
           }
 
-          authBtns = `<td class="py-2 px-1.5 text-center border-r border-slate-200" onclick="event.stopPropagation()">
+          authBtns = `<td class="py-2.5 px-2 text-center border-r border-slate-200" onclick="event.stopPropagation()">
             <div class="flex items-center justify-center gap-1">
-              <button onclick="openProgressModalById('${item.id}')" class="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[10px] font-black shadow-sm" title="อัปเดตงานและไฟล์ PDF">อัปเดต</button>
+              <button onclick="openProgressModalById('${item.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-black shadow-sm" title="อัปเดตงานและไฟล์ PDF">อัปเดต</button>
               ${editInitBtn}
               ${deleteBtn}
             </div>
@@ -1168,42 +1199,47 @@
         }
 
         html += `<tr class="cursor-pointer border-b border-slate-200 transition ${rowBg}" onclick="viewProjectSummaryById('${item.id}')">
-          <td class="py-2 px-2 text-center font-black text-slate-500 border-r border-slate-200 text-xs">${rowNumber}</td>
+          <td class="py-2.5 px-2 text-center font-black text-slate-600 border-r border-slate-200 text-sm">${rowNumber}</td>
           
-          <td class="py-2 px-2.5 border-r border-slate-200">
-            <div class="font-extrabold text-slate-900 text-xs leading-snug">${item.project_name}</div>
-            <div class="text-[11px] text-slate-600 font-semibold mt-0.5 flex items-center gap-1">
-              <i class="fa-solid fa-location-dot text-rose-600 text-[10px]"></i>
+          <td class="py-2.5 px-3 border-r border-slate-200">
+            <div class="font-extrabold text-slate-900 text-sm leading-snug">${item.project_name}</div>
+            <div class="text-xs text-slate-600 font-bold mt-0.5 flex items-center gap-1">
+              <i class="fa-solid fa-location-dot text-rose-600 text-xs"></i>
               <span>หมู่ ${item.moo_no} ${item.village_name}</span>
             </div>
           </td>
 
-          <td class="py-2 px-2.5 border-r border-slate-200">
-            <div class="text-[11px] text-slate-800 leading-tight">ตั้งไว้: <strong class="text-sky-700 font-black text-xs">${Number(item.budget_amount||0).toLocaleString('th-TH')} ฿</strong></div>
-            <div class="text-[10px] text-slate-600 leading-tight mt-0.5">สัญญา: <strong class="text-slate-900 font-bold">${item.approved_amount ? Number(item.approved_amount).toLocaleString('th-TH') + ' ฿' : '-'}</strong></div>
-            <div class="mt-1 flex flex-wrap items-center gap-1">
-              <span class="px-2 py-0.2 rounded text-[10px] font-bold shadow-sm whitespace-nowrap" style="background-color: ${officerStyle.bg}; color: ${officerStyle.text}">
+          <!-- คอลัมน์ 3: งบตั้งไว้ / สัญญา -->
+          <td class="py-2.5 px-3 border-r border-slate-200 whitespace-nowrap">
+            <div class="text-xs text-slate-800 leading-tight">ตั้งไว้: <strong class="text-sky-700 font-black text-sm">${Number(item.budget_amount||0).toLocaleString('th-TH')} ฿</strong></div>
+            <div class="text-xs text-slate-600 leading-tight mt-1">สัญญา: <strong class="text-slate-900 font-bold">${item.approved_amount ? Number(item.approved_amount).toLocaleString('th-TH') + ' ฿' : '-'}</strong></div>
+          </td>
+
+          <!-- คอลัมน์ 4 (สร้างใหม่): ช่าง / แหล่งเงิน -->
+          <td class="py-2.5 px-3 border-r border-slate-200 whitespace-nowrap">
+            <div class="flex flex-col gap-1 items-start">
+              <span class="px-2.5 py-0.5 rounded text-xs font-extrabold shadow-sm" style="background-color: ${officerStyle.bg}; color: ${officerStyle.text}">
                 <i class="fa-solid fa-user-gear me-1"></i>${item.officer_in_charge || '-'}
               </span>
-              <span class="bg-slate-100 text-slate-700 border border-slate-300 px-2 py-0.2 rounded text-[10px] font-semibold whitespace-nowrap">
+              <span class="bg-slate-100 text-slate-800 border border-slate-300 px-2 py-0.5 rounded text-[11px] font-bold">
                 ${item.funding_source || 'ไม่ระบุ'}
               </span>
             </div>
           </td>
 
-          <td class="py-2 px-2.5 border-r border-slate-200">${datesInfo}</td>
+          <td class="py-2.5 px-3 border-r border-slate-200">${datesInfo}</td>
           
-          <td class="py-2 px-2.5 border-r border-slate-200">
-            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold text-white inline-block shadow-sm whitespace-nowrap" style="background-color: ${stepObj.color}">${stepObj.name}</span>
+          <td class="py-2.5 px-3 border-r border-slate-200">
+            <span class="px-2.5 py-1 rounded text-xs font-extrabold text-white inline-block shadow-sm whitespace-nowrap" style="background-color: ${stepObj.color}">${stepObj.name}</span>
           </td>
 
-          <td class="py-2 px-2.5 text-center border-r border-slate-200">
-            <div class="w-full bg-slate-100 rounded-full h-3 border border-slate-300 overflow-hidden relative">
-              <div class="h-full transition-all duration-300 flex items-center justify-center text-[9px] font-black text-white" style="width: ${physPct}%; background-color: ${stepObj.color}">
+          <td class="py-2.5 px-3 text-center border-r border-slate-200">
+            <div class="w-full bg-slate-100 rounded-full h-3.5 border border-slate-300 overflow-hidden relative">
+              <div class="h-full transition-all duration-300 flex items-center justify-center text-[10px] font-black text-white" style="width: ${physPct}%; background-color: ${stepObj.color}">
                 ${physPct > 25 ? physPct + '%' : ''}
               </div>
             </div>
-            ${physPct <= 25 ? `<span class="text-[10px] font-black text-slate-700 mt-0.5 block leading-none">${physPct}%</span>` : ''}
+            ${physPct <= 25 ? `<span class="text-xs font-black text-slate-800 mt-0.5 block leading-none">${physPct}%</span>` : ''}
           </td>
           ${authBtns}
         </tr>`;
@@ -1643,7 +1679,7 @@
           const result = await res.json();
           if (result.success) {
             showNotification("ลบโครงการเรียบร้อยแล้ว");
-            loadProjects();
+            loadProjects(true);
           } else { alert(result.message); }
         } catch (err) { alert("เกิดข้อผิดพลาดในการลบ: " + err.message); }
       }
@@ -1747,7 +1783,7 @@
         if (result.success) {
           closeInitialModal();
           showNotification("บันทึกข้อมูลโครงการเรียบร้อยแล้ว");
-          loadProjects();
+          loadProjects(true);
         } else { alert(result.message); }
       } catch (err) { alert("เกิดข้อผิดพลาด: " + err.message); }
     }
@@ -1808,7 +1844,7 @@
         if (result.success) {
           closeProgressModal();
           showNotification("ได้ทำการอัปเดตโครงการและไฟล์เอกสารเรียบร้อยแล้ว");
-          loadProjects();
+          loadProjects(true);
         } else { alert(result.message); }
       } catch (err) {
         btnSubmit.disabled = false;
