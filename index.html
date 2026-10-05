@@ -327,7 +327,7 @@
     <section id="tab-content-gantt" class="hidden space-y-3">
       <div class="light-card rounded-xl p-3 space-y-3">
         
-        <!-- HEADER & TOOLBAR หน้าแผนดำเนินงาน (ปรับแก้ตามคำสั่ง: ตัดวงเล็บออก + ย้ายปุ่มจัดเรียงมาหลังชื่อ + ดึงตัวกรองดร็อปดาวน์ทั้งหมดมาไว้แถบนี้) -->
+        <!-- HEADER & TOOLBAR หน้าแผนดำเนินงาน -->
         <div class="flex flex-wrap items-center justify-between gap-2.5 pb-1 border-b border-slate-200">
           <div class="flex items-center gap-2">
             <h2 class="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
@@ -959,6 +959,7 @@
       }
     }
 
+    /* ปรับแต่ง Dropdown ให้ Default เป็น "" (ทุกปีงบประมาณ) เมื่อเริ่มเข้าสู่แอปพลิเคชัน */
     function initStaticDropdowns() {
       populateSelectOptions('work_group', MASTER_WORK_GROUPS);
       populateSelectOptions('budget_group', MASTER_BUDGET_GROUPS);
@@ -967,9 +968,10 @@
       populateSelectOptions('funding_source', MASTER_FUNDING_SOURCES);
 
       const currentYearBE = String(new Date().getFullYear() + 543);
-      populateFiscalYearOptions('filterFiscalYear', MASTER_FISCAL_YEARS, currentYearBE, '-- ทุกปีงบประมาณ --');
-      populateFiscalYearOptions('ganttFilterFy', MASTER_FISCAL_YEARS, currentYearBE, '-- ทุกปีงบประมาณ --');
-      populateFiscalYearOptions('dashFilterFiscalYear', MASTER_FISCAL_YEARS, currentYearBE, '-- ทุกปีงบประมาณ --');
+      // ตั้งค่า defaultYear เป็น "" เพื่อให้แสดงข้อมูลทุกปีงบประมาณก่อน
+      populateFiscalYearOptions('filterFiscalYear', MASTER_FISCAL_YEARS, "", '-- ทุกปีงบประมาณ --');
+      populateFiscalYearOptions('ganttFilterFy', MASTER_FISCAL_YEARS, "", '-- ทุกปีงบประมาณ --');
+      populateFiscalYearOptions('dashFilterFiscalYear', MASTER_FISCAL_YEARS, "", '-- ทุกปีงบประมาณ --');
       populateFiscalYearOptions('fiscal_year', MASTER_FISCAL_YEARS, currentYearBE, null);
     }
 
@@ -1116,7 +1118,6 @@
     }
 
     function populateDynamicDropdownFilters(data) {
-      // 1. หมวดรายจ่าย
       const categorySelects = ['filterBudgetCategory', 'ganttFilterCategory'];
       const categories = [...new Set(data.map(p => p.budget_category).filter(c => c && c.trim() !== ''))];
       categorySelects.forEach(id => {
@@ -1129,7 +1130,6 @@
         }
       });
 
-      // 2. แหล่งเงิน
       const fundingSelects = ['ganttFilterFunding'];
       const fundings = [...new Set(data.map(p => p.funding_source).filter(f => f && f.trim() !== ''))];
       fundingSelects.forEach(id => {
@@ -1142,7 +1142,6 @@
         }
       });
 
-      // 3. หมายเหตุ / สถานะข้อบัญญัติ
       const remarksSelects = ['filterRemarks', 'ganttFilterRemarks'];
       const remarksList = [...new Set(data.map(p => p.remarks).filter(r => r && r.trim() !== ''))];
       remarksSelects.forEach(id => {
@@ -1155,7 +1154,6 @@
         }
       });
 
-      // 4. ช่างรับผิดชอบ
       const projectOfficers = data.map(p => p.officer_in_charge).filter(o => o && o.trim() !== '' && o !== '-');
       const defaultOfficers = Object.keys(OFFICER_COLOR_MAP);
       const allOfficers = [...new Set([...defaultOfficers, ...projectOfficers])];
@@ -1643,10 +1641,10 @@
 
     function sortGanttBoard() {
       renderGanttBoard(true);
-      showNotification("จัดเรียงลำดับโครงการตามวันเริ่ม-สิ้นสุดเรียบร้อยแล้ว");
+      showNotification("จัดเรียงลำดับโครงการตามวันเริ่มและวันสิ้นสุดเรียบร้อยแล้ว");
     }
 
-    /* RENDER GANTT CHART BOARD (เพิ่มปุ่มเลือกวันที่สไตล์เนียนใส + ตัวกรองสมบูรณ์แบบ) */
+    /* RENDER GANTT CHART BOARD (ปรับปรุงระบบเรียง 2 ชั้น: เปรียบเทียบวันเริ่ม -> หากวันเริ่มเท่ากัน ให้เรียงตามวันสิ้นสุด) */
     function renderGanttBoard(shouldSort = false) {
       const tbody = document.getElementById('ganttTableBody');
       if (!allProjectsData || allProjectsData.length === 0) {
@@ -1678,15 +1676,28 @@
         return matchFy && matchOfficer && matchCategory && matchFunding && matchStatus && matchRemarks;
       });
 
+      /* ตรรกะการจัดเรียง 2 ระดับ (Multi-level Sorting Logic) */
       if (shouldSort) {
         filteredData.sort((a, b) => {
           const startA = parseLocalDateStr(a.plan_start_date);
           const startB = parseLocalDateStr(b.plan_start_date);
 
-          const timeA = (startA && !isNaN(startA.getTime())) ? startA.getTime() : Infinity;
-          const timeB = (startB && !isNaN(startB.getTime())) ? startB.getTime() : Infinity;
+          const timeStartA = (startA && !isNaN(startA.getTime())) ? startA.getTime() : Infinity;
+          const timeStartB = (startB && !isNaN(startB.getTime())) ? startB.getTime() : Infinity;
 
-          return timeA - timeB;
+          // 1. เรียงตามวันเริ่มโครงการก่อน
+          if (timeStartA !== timeStartB) {
+            return timeStartA - timeStartB;
+          }
+
+          // 2. หากวันเริ่มเท่ากัน ให้เรียงตามวันสิ้นสุดโครงการ (เสร็จก่อนอยู่บน, โครงการระยะยาวเสร็จทีหลังลงไปอยู่ล่าง)
+          const endA = parseLocalDateStr(a.plan_end_date);
+          const endB = parseLocalDateStr(b.plan_end_date);
+
+          const timeEndA = (endA && !isNaN(endA.getTime())) ? endA.getTime() : Infinity;
+          const timeEndB = (endB && !isNaN(endB.getTime())) ? endB.getTime() : Infinity;
+
+          return timeEndA - timeEndB;
         });
       }
 
@@ -1757,12 +1768,10 @@
             ${item.officer_in_charge || '-'}
           </td>
           
-          <!-- ช่องเลือกวันเริ่มแผน ไร้กรอบสี่เหลี่ยม เนียนไปกับพื้นหลัง -->
           <td class="p-1 border-r border-slate-200 text-center" onclick="event.stopPropagation()">
             <input type="date" value="${startDateValue}" onchange="quickUpdateGanttDates('${item.id}', this.value, '${endDateValue}')" class="gantt-date-input w-full text-xs font-bold text-slate-800">
           </td>
           
-          <!-- ช่องเลือกวันสิ้นสุดแผน ไร้กรอบสี่เหลี่ยม เนียนไปกับพื้นหลัง -->
           <td class="p-1 border-r border-slate-200 text-center" onclick="event.stopPropagation()">
             <input type="date" value="${endDateValue}" onchange="quickUpdateGanttDates('${item.id}', '${startDateValue}', this.value)" class="gantt-date-input w-full text-xs font-bold text-slate-800">
           </td>
