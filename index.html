@@ -111,6 +111,22 @@
     }
 
     .drawer-slide { transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+
+    /* ปรับช่อง Datepicker ใน Gantt ให้ไร้กรอบ สไตล์เนียนกับพื้นหลัง */
+    .gantt-date-input {
+      background-color: transparent !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      cursor: pointer;
+    }
+    .gantt-date-input::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 0.7;
+    }
+    .gantt-date-input::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
+    }
   </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col font-sans antialiased selection:bg-sky-600 selection:text-white">
@@ -247,35 +263,35 @@
       <!-- MAIN TABLE CONTAINER -->
       <div class="light-card rounded-xl p-3 space-y-3">
         
-        <!-- Filters Toolbar (ปรับปรุงรองรับ ค้นหาหมายเหตุ และ Dynamic Filters) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
-          <div class="lg:col-span-2 relative">
+        <!-- Filters Toolbar (เรียงในบรรทัดเดียวกันใช้ Flexbox + ความกว้างสมบูรณ์ตามตัวอักษร) -->
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex-1 min-w-[220px] relative">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
             <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="ค้นหาชื่อโครงการ, หมู่บ้าน, ช่าง, หมายเหตุ..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-600 focus:bg-white transition">
           </div>
 
-          <select id="filterFiscalYear" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
+          <select id="filterFiscalYear" onchange="filterTable()" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
             <option value="">-- ทุกปีงบประมาณ --</option>
           </select>
 
-          <select id="filterOfficer" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
+          <select id="filterOfficer" onchange="filterTable()" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
             <option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>
           </select>
 
-          <select id="filterRemarks" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
-            <option value="">-- ทุกหมายเหตุ/สถานะข้อบัญญัติ --</option>
-          </select>
-
-          <select id="filterBudgetCategory" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
+          <select id="filterBudgetCategory" onchange="filterTable()" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
             <option value="">-- ทุกหมวดรายจ่าย --</option>
           </select>
 
-          <select id="filterStatus" onchange="filterTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600 lg:col-span-1">
+          <select id="filterStatus" onchange="filterTable()" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
             <option value="">-- ทุกสถานะความก้าวหน้า --</option>
             <option value="ACTIVE">🟡 อยู่ระหว่างดำเนินการ</option>
             <option value="OVERDUE">🟠 เกินระยะเวลาตามแผนงาน</option>
             <option value="CONTRACT">🔵 อยู่ในห้วงระยะเวลาตามสัญญา</option>
             <option value="COMPLETED">🟢 แล้วเสร็จสมบูรณ์ (100%)</option>
+          </select>
+
+          <select id="filterRemarks" onchange="filterTable()" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
+            <option value="">-- ทุกหมายเหตุ/สถานะข้อบัญญัติ --</option>
           </select>
         </div>
 
@@ -310,21 +326,42 @@
     <!-- TAB 2: GANTT CHART BOARD -->
     <section id="tab-content-gantt" class="hidden space-y-3">
       <div class="light-card rounded-xl p-3 space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <h2 class="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-calendar-days text-sky-600"></i>
-            <span>ตารางบริหารและวางแผนดำเนินงานโครงการ (Gantt Chart Interactive)</span>
-          </h2>
-          <div class="flex items-center gap-2 flex-wrap">
-            <button onclick="sortGanttBoard()" class="px-3.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-extrabold flex items-center gap-1.5 transition shadow-sm">
+        
+        <!-- HEADER & TOOLBAR หน้าแผนดำเนินงาน (ปรับแก้ตามคำสั่ง: ตัดวงเล็บออก + ย้ายปุ่มจัดเรียงมาหลังชื่อ + ดึงตัวกรองดร็อปดาวน์ทั้งหมดมาไว้แถบนี้) -->
+        <div class="flex flex-wrap items-center justify-between gap-2.5 pb-1 border-b border-slate-200">
+          <div class="flex items-center gap-2">
+            <h2 class="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-calendar-days text-sky-600"></i>
+              <span>ตารางบริหารและวางแผนดำเนินงานโครงการ</span>
+            </h2>
+            <button onclick="sortGanttBoard()" class="ms-3 px-3 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-extrabold flex items-center gap-1.5 transition shadow-sm">
               <i class="fa-solid fa-arrow-down-short-wide"></i>
               <span>จัดเรียงตามวัน</span>
             </button>
-            <select id="ganttFilterFunding" onchange="renderGanttBoard(false)" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-sky-700 font-extrabold focus:outline-none">
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <select id="ganttFilterFy" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
+              <option value="">-- ทุกปีงบประมาณ --</option>
+            </select>
+            <select id="ganttFilterOfficer" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
+              <option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>
+            </select>
+            <select id="ganttFilterCategory" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
+              <option value="">-- ทุกหมวดรายจ่าย --</option>
+            </select>
+            <select id="ganttFilterFunding" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
               <option value="">-- ทุกแหล่งเงิน --</option>
             </select>
-            <select id="ganttFilterFy" onchange="renderGanttBoard(false)" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-sky-700 font-extrabold focus:outline-none">
-              <option value="">-- ทุกปีงบประมาณ --</option>
+            <select id="ganttFilterStatus" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
+              <option value="">-- ทุกสถานะความก้าวหน้า --</option>
+              <option value="ACTIVE">🟡 อยู่ระหว่างดำเนินการ</option>
+              <option value="OVERDUE">🟠 เกินระยะเวลาตามแผนงาน</option>
+              <option value="CONTRACT">🔵 อยู่ในห้วงระยะเวลาตามสัญญา</option>
+              <option value="COMPLETED">🟢 แล้วเสร็จสมบูรณ์ (100%)</option>
+            </select>
+            <select id="ganttFilterRemarks" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
+              <option value="">-- ทุกหมายเหตุ/สถานะข้อบัญญัติ --</option>
             </select>
           </div>
         </div>
@@ -577,7 +614,6 @@
           <textarea id="activity_detail" name="activity_detail" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 font-medium"></textarea>
         </div>
 
-        <!-- เพิ่มช่องหมายเหตุ (remarks) -->
         <div>
           <label class="block font-bold text-amber-800 mb-1"><i class="fa-solid fa-tag me-1"></i>หมายเหตุ / สถานะข้อบัญญัติ (เช่น ข้อบัญญัติปี 69, กันเงินระหว่างขออนุญาต)</label>
           <textarea id="remarks" name="remarks" rows="2" placeholder="ระบุหมายเหตุเพื่อแสดงต่อท้ายที่ตั้งและจัดหมวดหมู่ค้นหา..." class="w-full bg-amber-50/50 border border-amber-200 rounded-lg p-2 text-slate-800 font-semibold focus:outline-none focus:border-amber-500"></textarea>
@@ -929,9 +965,7 @@
       populateSelectOptions('budget_category', MASTER_BUDGET_CATEGORIES);
       populateSelectOptions('budget_type', MASTER_BUDGET_TYPES);
       populateSelectOptions('funding_source', MASTER_FUNDING_SOURCES);
-      populateSelectOptions('ganttFilterFunding', MASTER_FUNDING_SOURCES);
 
-      // Populate Dynamic Fiscal Years (2568 - 2580+)
       const currentYearBE = String(new Date().getFullYear() + 543);
       populateFiscalYearOptions('filterFiscalYear', MASTER_FISCAL_YEARS, currentYearBE, '-- ทุกปีงบประมาณ --');
       populateFiscalYearOptions('ganttFilterFy', MASTER_FISCAL_YEARS, currentYearBE, '-- ทุกปีงบประมาณ --');
@@ -1066,38 +1100,62 @@
     }
 
     function updateOfficerFilterOptions(officersList) {
-      const officerSelect = document.getElementById('filterOfficer');
-      if (!officerSelect) return;
-      
-      const currentVal = officerSelect.value;
-      officerSelect.innerHTML = '<option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>';
-      
-      officersList.sort().forEach(officer => {
-        if (officer && officer !== '-' && officer.trim() !== '') {
-          officerSelect.innerHTML += `<option value="${officer}">${officer}</option>`;
-        }
+      const filterIds = ['filterOfficer', 'ganttFilterOfficer'];
+      filterIds.forEach(id => {
+        const selectEl = document.getElementById(id);
+        if (!selectEl) return;
+        const currentVal = selectEl.value;
+        selectEl.innerHTML = '<option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>';
+        officersList.sort().forEach(officer => {
+          if (officer && officer !== '-' && officer.trim() !== '') {
+            selectEl.innerHTML += `<option value="${officer}">${officer}</option>`;
+          }
+        });
+        selectEl.value = currentVal;
       });
-      officerSelect.value = currentVal;
     }
 
     function populateDynamicDropdownFilters(data) {
-      // 1. Filter หมวดรายจ่าย
-      const categorySelect = document.getElementById('filterBudgetCategory');
+      // 1. หมวดรายจ่าย
+      const categorySelects = ['filterBudgetCategory', 'ganttFilterCategory'];
       const categories = [...new Set(data.map(p => p.budget_category).filter(c => c && c.trim() !== ''))];
-      categorySelect.innerHTML = '<option value="">-- ทุกหมวดรายจ่าย --</option>';
-      categories.forEach(c => {
-        categorySelect.innerHTML += `<option value="${c}">${c}</option>`;
+      categorySelects.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          const val = el.value;
+          el.innerHTML = '<option value="">-- ทุกหมวดรายจ่าย --</option>';
+          categories.forEach(c => el.innerHTML += `<option value="${c}">${c}</option>`);
+          el.value = val;
+        }
       });
 
-      // 2. Filter หมายเหตุ / สถานะข้อบัญญัติ
-      const remarksSelect = document.getElementById('filterRemarks');
+      // 2. แหล่งเงิน
+      const fundingSelects = ['ganttFilterFunding'];
+      const fundings = [...new Set(data.map(p => p.funding_source).filter(f => f && f.trim() !== ''))];
+      fundingSelects.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          const val = el.value;
+          el.innerHTML = '<option value="">-- ทุกแหล่งเงิน --</option>';
+          fundings.forEach(f => el.innerHTML += `<option value="${f}">${f}</option>`);
+          el.value = val;
+        }
+      });
+
+      // 3. หมายเหตุ / สถานะข้อบัญญัติ
+      const remarksSelects = ['filterRemarks', 'ganttFilterRemarks'];
       const remarksList = [...new Set(data.map(p => p.remarks).filter(r => r && r.trim() !== ''))];
-      remarksSelect.innerHTML = '<option value="">-- ทุกหมายเหตุ/สถานะข้อบัญญัติ --</option>';
-      remarksList.forEach(r => {
-        remarksSelect.innerHTML += `<option value="${r}">${r}</option>`;
+      remarksSelects.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          const val = el.value;
+          el.innerHTML = '<option value="">-- ทุกหมายเหตุ/สถานะข้อบัญญัติ --</option>';
+          remarksList.forEach(r => el.innerHTML += `<option value="${r}">${r}</option>`);
+          el.value = val;
+        }
       });
 
-      // 3. Filter ช่างรับผิดชอบ
+      // 4. ช่างรับผิดชอบ
       const projectOfficers = data.map(p => p.officer_in_charge).filter(o => o && o.trim() !== '' && o !== '-');
       const defaultOfficers = Object.keys(OFFICER_COLOR_MAP);
       const allOfficers = [...new Set([...defaultOfficers, ...projectOfficers])];
@@ -1217,7 +1275,7 @@
       }
     }
 
-    /* RENDER TABLE (ปรับแต่งแสดงผลหมายเหตุต่อท้ายที่ตั้งในบรรทัดเดียวกัน) */
+    /* RENDER TABLE */
     function renderTable(data) {
       const tbody = document.getElementById('projectTableBody');
       if (!data || data.length === 0) {
@@ -1270,7 +1328,6 @@
           </td>`;
         }
 
-        // แสดงผลหมายเหตุต่อท้ายที่ตั้งในบรรทัดเดียวกัน
         const remarksTag = item.remarks && item.remarks.trim() !== '' 
           ? `<span class="ms-2 px-1.5 py-0.5 rounded bg-amber-100/90 text-amber-900 border border-amber-300 font-extrabold text-[11px] inline-flex items-center gap-1"><i class="fa-solid fa-tag text-amber-700"></i>${item.remarks}</span>` 
           : '';
@@ -1589,7 +1646,7 @@
       showNotification("จัดเรียงลำดับโครงการตามวันเริ่ม-สิ้นสุดเรียบร้อยแล้ว");
     }
 
-    /* RENDER GANTT CHART BOARD (เพิ่มปุ่มแก้ไขวันเริ่ม-สิ้นสุดผ่านปฏิทิน) */
+    /* RENDER GANTT CHART BOARD (เพิ่มปุ่มเลือกวันที่สไตล์เนียนใส + ตัวกรองสมบูรณ์แบบ) */
     function renderGanttBoard(shouldSort = false) {
       const tbody = document.getElementById('ganttTableBody');
       if (!allProjectsData || allProjectsData.length === 0) {
@@ -1598,12 +1655,27 @@
       }
 
       const fyFilter = document.getElementById('ganttFilterFy').value;
+      const officerFilter = document.getElementById('ganttFilterOfficer').value;
+      const categoryFilter = document.getElementById('ganttFilterCategory').value;
       const fundingFilter = document.getElementById('ganttFilterFunding').value;
+      const statusFilter = document.getElementById('ganttFilterStatus').value;
+      const remarksFilter = document.getElementById('ganttFilterRemarks').value;
 
       let filteredData = allProjectsData.filter(p => {
         const matchFy = fyFilter === "" || String(p.fiscal_year) === fyFilter;
-        const matchFunding = fundingFilter === "" || String(p.funding_source) === fundingFilter;
-        return matchFy && matchFunding;
+        const matchOfficer = officerFilter === "" || String(p.officer_in_charge || '').trim() === officerFilter.trim();
+        const matchCategory = categoryFilter === "" || String(p.budget_category || '') === categoryFilter;
+        const matchFunding = fundingFilter === "" || String(p.funding_source || '') === fundingFilter;
+        const matchRemarks = remarksFilter === "" || String(p.remarks || '').trim() === remarksFilter.trim();
+
+        let matchStatus = true;
+        const evalRes = evaluateSmartDelayStatus(p);
+        if (statusFilter === "ACTIVE") matchStatus = (!evalRes.isCompleted && !evalRes.isOverdue);
+        else if (statusFilter === "OVERDUE") matchStatus = evalRes.isOverdue;
+        else if (statusFilter === "CONTRACT") matchStatus = evalRes.isContractActive;
+        else if (statusFilter === "COMPLETED") matchStatus = evalRes.isCompleted;
+
+        return matchFy && matchOfficer && matchCategory && matchFunding && matchStatus && matchRemarks;
       });
 
       if (shouldSort) {
@@ -1685,14 +1757,14 @@
             ${item.officer_in_charge || '-'}
           </td>
           
-          <!-- ช่องเลือกวันเริ่มแผนแบบ Inline Datepicker -->
-          <td class="p-1 border-r border-slate-200" onclick="event.stopPropagation()">
-            <input type="date" value="${startDateValue}" onchange="quickUpdateGanttDates('${item.id}', this.value, '${endDateValue}')" class="w-full bg-slate-50 border border-slate-300 rounded px-1 py-0.5 text-[11px] font-bold text-slate-800 focus:bg-white focus:border-sky-600">
+          <!-- ช่องเลือกวันเริ่มแผน ไร้กรอบสี่เหลี่ยม เนียนไปกับพื้นหลัง -->
+          <td class="p-1 border-r border-slate-200 text-center" onclick="event.stopPropagation()">
+            <input type="date" value="${startDateValue}" onchange="quickUpdateGanttDates('${item.id}', this.value, '${endDateValue}')" class="gantt-date-input w-full text-xs font-bold text-slate-800">
           </td>
           
-          <!-- ช่องเลือกวันสิ้นสุดแผนแบบ Inline Datepicker -->
-          <td class="p-1 border-r border-slate-200" onclick="event.stopPropagation()">
-            <input type="date" value="${endDateValue}" onchange="quickUpdateGanttDates('${item.id}', '${startDateValue}', this.value)" class="w-full bg-slate-50 border border-slate-300 rounded px-1 py-0.5 text-[11px] font-bold text-slate-800 focus:bg-white focus:border-sky-600">
+          <!-- ช่องเลือกวันสิ้นสุดแผน ไร้กรอบสี่เหลี่ยม เนียนไปกับพื้นหลัง -->
+          <td class="p-1 border-r border-slate-200 text-center" onclick="event.stopPropagation()">
+            <input type="date" value="${endDateValue}" onchange="quickUpdateGanttDates('${item.id}', '${startDateValue}', this.value)" class="gantt-date-input w-full text-xs font-bold text-slate-800">
           </td>
           
           ${monthCellsHtml}
@@ -1979,7 +2051,6 @@
       });
     }
 
-    /* FILTER TABLE (ปรับเพิ่มเงื่อนไขค้นหาคอลัมน์หมายเหตุ/remarks) */
     function filterTable() {
       const kw = (document.getElementById('searchInput').value || '').toLowerCase().trim();
       const fy = document.getElementById('filterFiscalYear').value;
@@ -1995,7 +2066,7 @@
                         (item.village_name || '').toLowerCase().includes(kw) ||
                         (item.officer_in_charge || '').toLowerCase().includes(kw) ||
                         (item.vendor_name || '').toLowerCase().includes(kw) ||
-                        (item.remarks || '').toLowerCase().includes(kw); // ตรวจค้นในหมายเหตุ
+                        (item.remarks || '').toLowerCase().includes(kw);
                         
         const matchFy = fy === "" || String(item.fiscal_year) === fy;
         const matchOfficer = officer === "" || String(item.officer_in_charge || '').trim() === officer.trim();
