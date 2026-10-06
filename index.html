@@ -371,7 +371,7 @@
             <thead class="sticky top-0 bg-gradient-to-r from-slate-950 via-slate-900 to-sky-950 text-white font-extrabold z-10">
               <tr>
                 <th rowspan="2" class="p-2 border-r border-white/10 w-10">#</th>
-                <th rowspan="2" class="p-2 border-r border-white/10 text-left min-w-[250px]">ชื่อโครงการ</th>
+                <th rowspan="2" class="p-2 border-r border-white/10 text-left min-w-[280px]">ชื่อโครงการ</th>
                 <th rowspan="2" class="p-2 border-r border-white/10 w-24">ไตรมาส</th>
                 <th rowspan="2" class="p-2 border-r border-white/10 w-32">แหล่งเงิน</th>
                 <th rowspan="2" class="p-2 border-r border-white/10 w-28">งบประมาณ</th>
@@ -457,7 +457,7 @@
         <div class="light-card rounded-xl p-3.5">
           <h3 class="text-xs font-black text-slate-800 mb-2.5 flex items-center gap-2">
             <i class="fa-solid fa-chart-pie text-sky-600"></i>
-            <span>สัดส่วนสถานะสุขภาพโครงการ</span>
+            <span>สัดส่วนสุขภาพโครงการ</span>
           </h3>
           <div class="h-48">
             <canvas id="chartHealthDonut"></canvas>
@@ -797,11 +797,30 @@
       return { bg: '#cbd5e1', text: '#0f172a' };
     }
 
+    function parseLocalDateStr(dateStr) {
+      if (!dateStr) return null;
+      if (dateStr instanceof Date) return isNaN(dateStr.getTime()) ? null : dateStr;
+      
+      const str = String(dateStr).trim();
+      if (str === '' || str === '-') return null;
+
+      // กรณี YYYY-MM-DD
+      const parts = str.split('T')[0].split('-');
+      if (parts.length === 3) {
+        let year = Number(parts[0]);
+        if (year > 2400) year -= 543; // แปลงพ.ศ. เป็น ค.ศ.
+        return new Date(year, Number(parts[1]) - 1, Number(parts[2]));
+      }
+
+      const parsed = new Date(str);
+      return isNaN(parsed.getTime()) ? null : parsed;
+    }
+
     function calculateQuarterFromDates(startDateStr, endDateStr) {
       if (!startDateStr || !endDateStr) return '-';
       const start = parseLocalDateStr(startDateStr);
       const end = parseLocalDateStr(endDateStr);
-      if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) return '-';
+      if (!start || !end) return '-';
 
       const getQ = (dateObj) => {
         const m = dateObj.getMonth() + 1;
@@ -825,21 +844,13 @@
     function formatDateDMY(dateStr) {
       if (!dateStr || dateStr === '-') return '-';
       const parsed = parseLocalDateStr(dateStr);
-      if (!parsed || isNaN(parsed.getTime())) return dateStr;
+      if (!parsed) return dateStr;
       
       const day = String(parsed.getDate()).padStart(2, '0');
       const month = String(parsed.getMonth() + 1).padStart(2, '0');
       let year = parsed.getFullYear();
       if (year < 2500) year += 543;
       return `${day}/${month}/${year}`;
-    }
-
-    function parseLocalDateStr(dateStr) {
-      if (!dateStr) return null;
-      if (dateStr instanceof Date) return dateStr;
-      const parts = String(dateStr).trim().split('T')[0].split('-');
-      if (parts.length === 3) return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-      return new Date(dateStr);
     }
 
     window.onload = function() {
@@ -959,7 +970,6 @@
       }
     }
 
-    /* ปรับแต่ง Dropdown ให้ Default เป็น "" (ทุกปีงบประมาณ) เมื่อเริ่มเข้าสู่แอปพลิเคชัน */
     function initStaticDropdowns() {
       populateSelectOptions('work_group', MASTER_WORK_GROUPS);
       populateSelectOptions('budget_group', MASTER_BUDGET_GROUPS);
@@ -968,7 +978,6 @@
       populateSelectOptions('funding_source', MASTER_FUNDING_SOURCES);
 
       const currentYearBE = String(new Date().getFullYear() + 543);
-      // ตั้งค่า defaultYear เป็น "" เพื่อให้แสดงข้อมูลทุกปีงบประมาณก่อน
       populateFiscalYearOptions('filterFiscalYear', MASTER_FISCAL_YEARS, "", '-- ทุกปีงบประมาณ --');
       populateFiscalYearOptions('ganttFilterFy', MASTER_FISCAL_YEARS, "", '-- ทุกปีงบประมาณ --');
       populateFiscalYearOptions('dashFilterFiscalYear', MASTER_FISCAL_YEARS, "", '-- ทุกปีงบประมาณ --');
@@ -1017,7 +1026,7 @@
       if (item.contract_start_date && item.contract_end_date) {
         const cStart = parseLocalDateStr(item.contract_start_date);
         const cEnd = parseLocalDateStr(item.contract_end_date);
-        if (cStart && cEnd && !isNaN(cStart.getTime()) && !isNaN(cEnd.getTime())) {
+        if (cStart && cEnd) {
           hasValidContract = true;
           cStart.setHours(0, 0, 0, 0);
           cEnd.setHours(23, 59, 59, 999);
@@ -1029,7 +1038,7 @@
 
       if (item.plan_end_date) {
         const planEnd = parseLocalDateStr(item.plan_end_date);
-        if (planEnd && !isNaN(planEnd.getTime())) {
+        if (planEnd) {
           planEnd.setHours(23, 59, 59, 999);
           if (today > planEnd) {
             const diffDays = Math.ceil((today.getTime() - planEnd.getTime()) / (1000 * 3600 * 24));
@@ -1183,6 +1192,11 @@
         populateDynamicDropdownFilters(allProjectsData);
         updateMiniKpiCards(allProjectsData);
         filterTable();
+
+        // หากกำลังเปิด Tab Gantt ให้ Re-render ด้วย
+        if (!document.getElementById('tab-content-gantt').classList.contains('hidden')) {
+          renderGanttBoard(false);
+        }
 
         if (isManualRefresh) {
           showNotification("อัปเดตข้อมูลโครงการล่าสุดเรียบร้อยแล้ว");
@@ -1644,7 +1658,7 @@
       showNotification("จัดเรียงลำดับโครงการตามวันเริ่มและวันสิ้นสุดเรียบร้อยแล้ว");
     }
 
-    /* RENDER GANTT CHART BOARD (ปรับปรุงระบบเรียง 2 ชั้น: เปรียบเทียบวันเริ่ม -> หากวันเริ่มเท่ากัน ให้เรียงตามวันสิ้นสุด) */
+    /* RENDER GANTT CHART BOARD (ปรับปรุงระบบเรียง 2 ชั้น & คำนวณแถบสีเดือน + ป้ายหมายเหตุ) */
     function renderGanttBoard(shouldSort = false) {
       const tbody = document.getElementById('ganttTableBody');
       if (!allProjectsData || allProjectsData.length === 0) {
@@ -1676,26 +1690,23 @@
         return matchFy && matchOfficer && matchCategory && matchFunding && matchStatus && matchRemarks;
       });
 
-      /* ตรรกะการจัดเรียง 2 ระดับ (Multi-level Sorting Logic) */
       if (shouldSort) {
         filteredData.sort((a, b) => {
           const startA = parseLocalDateStr(a.plan_start_date);
           const startB = parseLocalDateStr(b.plan_start_date);
 
-          const timeStartA = (startA && !isNaN(startA.getTime())) ? startA.getTime() : Infinity;
-          const timeStartB = (startB && !isNaN(startB.getTime())) ? startB.getTime() : Infinity;
+          const timeStartA = startA ? startA.getTime() : Infinity;
+          const timeStartB = startB ? startB.getTime() : Infinity;
 
-          // 1. เรียงตามวันเริ่มโครงการก่อน
           if (timeStartA !== timeStartB) {
             return timeStartA - timeStartB;
           }
 
-          // 2. หากวันเริ่มเท่ากัน ให้เรียงตามวันสิ้นสุดโครงการ (เสร็จก่อนอยู่บน, โครงการระยะยาวเสร็จทีหลังลงไปอยู่ล่าง)
           const endA = parseLocalDateStr(a.plan_end_date);
           const endB = parseLocalDateStr(b.plan_end_date);
 
-          const timeEndA = (endA && !isNaN(endA.getTime())) ? endA.getTime() : Infinity;
-          const timeEndB = (endB && !isNaN(endB.getTime())) ? endB.getTime() : Infinity;
+          const timeEndA = endA ? endA.getTime() : Infinity;
+          const timeEndB = endB ? endB.getTime() : Infinity;
 
           return timeEndA - timeEndB;
         });
@@ -1714,46 +1725,72 @@
         
         const officerStyle = getOfficerStyle(item.officer_in_charge);
 
-        const fyMonths = [9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8];
+        // เดือนปีงบประมาณไทย: ต.ค.(9), พ.ย.(10), ธ.ค.(11), ม.ค.(0), ก.พ.(1), มี.ค.(2), เม.ย.(3), พ.ค.(4), มิ.ย.(5), ก.ค.(6), ส.ค.(7), ก.ย.(8)
+        const fyMonthIndices = [9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8];
         const monthActiveFlags = Array(12).fill(false);
 
-        if (item.plan_start_date && item.plan_end_date) {
-          const start = parseLocalDateStr(item.plan_start_date);
-          const end = parseLocalDateStr(item.plan_end_date);
+        const startDateObj = parseLocalDateStr(item.plan_start_date);
+        const endDateObj = parseLocalDateStr(item.plan_end_date);
 
-          if (start && end && !isNaN(start.getTime()) && !isNaN(end.getTime())) {
-            fyMonths.forEach((mIndex, i) => {
-              let checkYear = start.getFullYear();
-              if (mIndex >= 9 && start.getMonth() < 9) checkYear = start.getFullYear() - 1;
-              else if (mIndex < 9 && start.getMonth() >= 9) checkYear = start.getFullYear() + 1;
+        if (startDateObj && endDateObj) {
+          const pStart = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate(), 0, 0, 0);
+          const pEnd = new Date(endDateObj.getFullYear(), endDateObj.getMonth(), endDateObj.getDate(), 23, 59, 59);
 
-              const mStart = new Date(checkYear, mIndex, 1);
-              const mEnd = new Date(checkYear, mIndex + 1, 0, 23, 59, 59);
+          // หาปี ค.ศ. หลักของโครงการจากวันเริ่มแผน
+          const refYear = startDateObj.getFullYear();
 
-              if (start <= mEnd && end >= mStart) {
-                monthActiveFlags[i] = true;
-              }
-            });
-          }
+          fyMonthIndices.forEach((mIdx, i) => {
+            // หากเป็น ต.ค.-ธ.ค. (9-11) และวันเริ่มงานตกในปีงบฯ นั้น ให้คำนวณปี ค.ศ. ให้ถูกต้อง
+            let mYear = refYear;
+            if (mIdx < 9 && startDateObj.getMonth() >= 9) {
+              mYear = refYear + 1; // สลับไปปีถัดไป เช่น ม.ค.
+            } else if (mIdx >= 9 && startDateObj.getMonth() < 9) {
+              mYear = refYear - 1; // ถอยไปปีก่อนหน้า เช่น ต.ค.
+            }
+
+            const mStart = new Date(mYear, mIdx, 1, 0, 0, 0);
+            const mEnd = new Date(mYear, mIdx + 1, 0, 23, 59, 59);
+
+            if (pStart <= mEnd && pEnd >= mStart) {
+              monthActiveFlags[i] = true;
+            }
+          });
         }
 
         let monthCellsHtml = '';
         monthActiveFlags.forEach(isActive => {
           if (isActive) {
-            monthCellsHtml += `<td class="p-1 border-r border-slate-200" style="background-color: ${officerStyle.bg};" title="ผู้รับผิดชอบ: ${item.officer_in_charge}"></td>`;
+            monthCellsHtml += `<td class="p-1 border-r border-slate-200" style="background-color: ${officerStyle.bg};" title="ผู้รับผิดชอบ: ${item.officer_in_charge || '-'}"></td>`;
           } else {
             monthCellsHtml += `<td class="p-1 border-r border-slate-200 bg-slate-50"></td>`;
           }
         });
 
-        const startDateValue = item.plan_start_date ? String(item.plan_start_date).split('T')[0] : '';
-        const endDateValue = item.plan_end_date ? String(item.plan_end_date).split('T')[0] : '';
+        // แปลงรูปแบบวันที่สำหรับใส่ใน `<input type="date">`
+        const formatInputDate = (dObj) => {
+          if (!dObj) return '';
+          const y = dObj.getFullYear();
+          const m = String(dObj.getMonth() + 1).padStart(2, '0');
+          const d = String(dObj.getDate()).padStart(2, '0');
+          return `${y}-${m}-${d}`;
+        };
+
+        const startDateValue = formatInputDate(startDateObj);
+        const endDateValue = formatInputDate(endDateObj);
+
+        // แสดงผล Tag หมายเหตุ (รูปที่ 2)
+        const remarksTag = item.remarks && item.remarks.trim() !== '' 
+          ? `<span class="mt-1 px-1.5 py-0.5 rounded bg-amber-100/90 text-amber-900 border border-amber-300 font-extrabold text-[10px] inline-flex items-center gap-1"><i class="fa-solid fa-tag text-amber-700"></i>${item.remarks}</span>` 
+          : '';
 
         html += `<tr class="cursor-pointer hover:bg-slate-100 transition border-b border-slate-200" onclick="viewProjectSummaryById('${item.id}')">
           <td class="py-2 px-2 font-bold text-slate-500 border-r border-slate-200 text-xs">${rowNum}</td>
           <td class="py-2 px-3 text-left border-r border-slate-200">
             <span class="font-extrabold text-slate-900 text-xs leading-snug block">${item.project_name}</span>
-            <span class="bg-slate-100 text-slate-700 border border-slate-300 px-1.5 py-0.2 rounded text-[10px] font-semibold">${item.budget_category || 'หมวดทั่วไป'}</span>
+            <div class="flex items-center flex-wrap gap-1 mt-0.5">
+              <span class="bg-slate-100 text-slate-700 border border-slate-300 px-1.5 py-0.2 rounded text-[10px] font-semibold">${item.budget_category || 'หมวดทั่วไป'}</span>
+              ${remarksTag}
+            </div>
           </td>
           <td class="py-2 px-2 font-bold text-sky-700 border-r border-slate-200 text-xs">${quarterStr}</td>
           <td class="py-2 px-2 border-r border-slate-200">
@@ -1769,11 +1806,11 @@
           </td>
           
           <td class="p-1 border-r border-slate-200 text-center" onclick="event.stopPropagation()">
-            <input type="date" value="${startDateValue}" onchange="quickUpdateGanttDates('${item.id}', this.value, '${endDateValue}')" class="gantt-date-input w-full text-xs font-bold text-slate-800">
+            <input type="date" value="${startDateValue}" id="gantt_start_${item.id}" onchange="quickUpdateGanttDates('${item.id}')" class="gantt-date-input w-full text-xs font-bold text-slate-800">
           </td>
           
           <td class="p-1 border-r border-slate-200 text-center" onclick="event.stopPropagation()">
-            <input type="date" value="${endDateValue}" onchange="quickUpdateGanttDates('${item.id}', '${startDateValue}', this.value)" class="gantt-date-input w-full text-xs font-bold text-slate-800">
+            <input type="date" value="${endDateValue}" id="gantt_end_${item.id}" onchange="quickUpdateGanttDates('${item.id}')" class="gantt-date-input w-full text-xs font-bold text-slate-800">
           </td>
           
           ${monthCellsHtml}
@@ -1783,8 +1820,24 @@
       tbody.innerHTML = html;
     }
 
-    async function quickUpdateGanttDates(projectId, startDate, endDate) {
+    async function quickUpdateGanttDates(projectId) {
+      const startEl = document.getElementById(`gantt_start_${projectId}`);
+      const endEl = document.getElementById(`gantt_end_${projectId}`);
+      if (!startEl || !endEl) return;
+
+      const startDate = startEl.value;
+      const endDate = endEl.value;
+
       if (!startDate || !endDate) return;
+
+      // อัปเดตข้อมูลฝั่ง Client ทันทีเพื่อความลื่นไหล
+      const targetItem = allProjectsData.find(p => String(p.id) === String(projectId));
+      if (targetItem) {
+        targetItem.plan_start_date = startDate;
+        targetItem.plan_end_date = endDate;
+        renderGanttBoard(false);
+      }
+
       try {
         const res = await fetch(GAS_API_URL, {
           method: 'POST',
@@ -1798,12 +1851,13 @@
         const result = await res.json();
         if (result.success) {
           showNotification("อัปเดตแผนวันเริ่ม-สิ้นสุดเรียบร้อยแล้ว");
-          loadProjects(false);
         } else {
           alert("เกิดข้อผิดพลาด: " + result.message);
+          loadProjects(false);
         }
       } catch (err) {
         alert("เกิดข้อผิดพลาดในการอัปเดตวัน: " + err.message);
+        loadProjects(false);
       }
     }
 
