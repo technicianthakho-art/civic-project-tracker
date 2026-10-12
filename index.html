@@ -114,10 +114,16 @@
 
     .gantt-date-input {
       background-color: transparent !important;
-      border: none !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 6px !important;
+      padding: 2px 4px !important;
       outline: none !important;
       box-shadow: none !important;
       cursor: pointer;
+    }
+    .gantt-date-input:focus {
+      border-color: #0284c7 !important;
+      background-color: #ffffff !important;
     }
     .gantt-date-input::-webkit-calendar-picker-indicator {
       cursor: pointer;
@@ -277,7 +283,7 @@
             <option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>
           </select>
 
-          <!-- 🟢 ตัวกรองหมู่บ้าน/หมู่ที่ (Table View) -->
+          <!-- ตัวกรองหมู่บ้าน/หมู่ที่ (Table View) -->
           <select id="filterVillage" onchange="filterTable()" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
             <option value="">-- ทุกหมู่บ้าน/หมู่ที่ --</option>
           </select>
@@ -351,7 +357,7 @@
             <select id="ganttFilterOfficer" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
               <option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>
             </select>
-            <!-- 🟢 ตัวกรองหมู่บ้าน/หมู่ที่ (Gantt View) -->
+            <!-- ตัวกรองหมู่บ้าน/หมู่ที่ (Gantt View) -->
             <select id="ganttFilterVillage" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
               <option value="">-- ทุกหมู่บ้าน/หมู่ที่ --</option>
             </select>
@@ -390,8 +396,8 @@
                 <th colspan="12" class="p-1 bg-slate-900/80">เดือน (ปีงบประมาณ)</th>
               </tr>
               <tr class="text-xs">
-                <th class="p-1.5 border-r border-white/10 w-28">วันเริ่ม</th>
-                <th class="p-1.5 border-r border-white/10 w-28">วันสิ้นสุด</th>
+                <th class="p-1.5 border-r border-white/10 w-32">วันเริ่ม</th>
+                <th class="p-1.5 border-r border-white/10 w-32">วันสิ้นสุด</th>
                 <th class="w-7 p-1 bg-amber-600 text-white border-r border-white/10">ต.ค.</th>
                 <th class="w-7 p-1 bg-amber-600 text-white border-r border-white/10">พ.ย.</th>
                 <th class="w-7 p-1 bg-amber-600 text-white border-r border-white/10">ธ.ค.</th>
@@ -805,6 +811,7 @@
       return { bg: '#cbd5e1', text: '#0f172a' };
     }
 
+    // 🟢 UTILITY PARSE DATE: รองรับการแปลงปี พ.ศ. คืนค่าเป็น Date Object แม่นยำ
     function parseLocalDateStr(dateStr) {
       if (!dateStr) return null;
       if (dateStr instanceof Date) return isNaN(dateStr.getTime()) ? null : dateStr;
@@ -812,15 +819,32 @@
       const str = String(dateStr).trim();
       if (str === '' || str === '-') return null;
 
+      // กรณีส่งมาเป็นรูปแบบ ISO YYYY-MM-DD
       const parts = str.split('T')[0].split('-');
       if (parts.length === 3) {
         let year = Number(parts[0]);
-        if (year > 2400) year -= 543;
-        return new Date(year, Number(parts[1]) - 1, Number(parts[2]));
+        if (year > 2400) year -= 543; // แปลง พ.ศ. เป็น ค.ศ.
+        const month = Number(parts[1]) - 1;
+        const day = Number(parts[2]);
+        if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+          return new Date(year, month, day);
+        }
       }
 
       const parsed = new Date(str);
       return isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    // 🟢 UTILITY FORMAT DATE FOR <input type="date">: บังคับแปลงเป็น YYYY-MM-DD (ค.ศ. ISO) เสมอ
+    function formatInputDate(dObj) {
+      if (!dObj) return '';
+      const parsed = parseLocalDateStr(dObj);
+      if (!parsed) return '';
+      
+      const y = parsed.getFullYear();
+      const m = String(parsed.getMonth() + 1).padStart(2, '0');
+      const d = String(parsed.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
     }
 
     // 🟢 ปรับปรุงการคำนวณไตรมาส พ.ศ. ไทย 100%
@@ -880,7 +904,7 @@
     };
 
     function checkStoredAuthSession() {
-      const storedRole = sessionStorage.getItem('USER_ROLE');
+      const storedRole = sessionStorage.getItem('USER_ROLE') || localStorage.getItem('USER_ROLE');
       if (storedRole === 'ADMIN' || storedRole === 'OPERATOR') {
         currentUserRole = storedRole;
         updateAuthUI();
@@ -892,6 +916,8 @@
         if (confirm("คุณต้องการออกจากระบบหรือไม่?")) {
           sessionStorage.removeItem('USER_ROLE');
           sessionStorage.removeItem('USER_PASSCODE');
+          localStorage.removeItem('USER_ROLE');
+          localStorage.removeItem('USER_PASSCODE');
           currentUserRole = 'GUEST';
           updateAuthUI();
           showNotification("ออกจากระบบเรียบร้อยแล้ว");
@@ -926,7 +952,9 @@
         if (res.success) {
           currentUserRole = res.role;
           sessionStorage.setItem('USER_ROLE', res.role);
-          sessionStorage.setItem('USER_PASSCODE', passcode); // 🟢 เก็บ Passcode ไว้ใช้ยืนยันสิทธิ์ Server-side
+          sessionStorage.setItem('USER_PASSCODE', passcode);
+          localStorage.setItem('USER_ROLE', res.role);
+          localStorage.setItem('USER_PASSCODE', passcode);
           closeLoginModal();
           updateAuthUI();
           showNotification(res.message);
@@ -936,6 +964,10 @@
       } catch (err) {
         alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์: " + err.message);
       }
+    }
+
+    function getActivePasscode() {
+      return sessionStorage.getItem('USER_PASSCODE') || localStorage.getItem('USER_PASSCODE') || '';
     }
 
     function updateAuthUI() {
@@ -1317,7 +1349,7 @@
       }
     }
 
-    /* RENDER TABLE */
+    /* RENDER TABLE VIEW */
     function renderTable(data) {
       const tbody = document.getElementById('projectTableBody');
       if (!data || data.length === 0) {
@@ -1618,7 +1650,7 @@
       Chart.defaults.color = '#334155';
       Chart.defaults.borderColor = '#e2e8f0';
 
-      if (chartMonthlyInst) chartMonthlyInst.destroy();
+      if (chartMonthlyInst) { chartMonthlyInst.destroy(); chartMonthlyInst = null; }
       chartMonthlyInst = new Chart(document.getElementById('chartMonthlyTrend'), {
         type: 'line',
         data: {
@@ -1631,7 +1663,7 @@
         options: { responsive: true, maintainAspectRatio: false }
       });
 
-      if (chartHealthInst) chartHealthInst.destroy();
+      if (chartHealthInst) { chartHealthInst.destroy(); chartHealthInst = null; }
       chartHealthInst = new Chart(document.getElementById('chartHealthDonut'), {
         type: 'doughnut',
         data: {
@@ -1641,7 +1673,7 @@
         options: { responsive: true, maintainAspectRatio: false }
       });
 
-      if (chartRadarInst) chartRadarInst.destroy();
+      if (chartRadarInst) { chartRadarInst.destroy(); chartRadarInst = null; }
       chartRadarInst = new Chart(document.getElementById('chartRadarBudget'), {
         type: 'radar',
         data: {
@@ -1659,7 +1691,7 @@
       const catLabels = Object.keys(categoryProgressMap);
       const catAvgProgress = catLabels.map(cat => Math.round(categoryProgressMap[cat] / categoryCountMap[cat]));
 
-      if (chartCategoryProgressInst) chartCategoryProgressInst.destroy();
+      if (chartCategoryProgressInst) { chartCategoryProgressInst.destroy(); chartCategoryProgressInst = null; }
       chartCategoryProgressInst = new Chart(document.getElementById('chartCategoryProgress'), {
         type: 'bar',
         data: {
@@ -1688,7 +1720,7 @@
       showNotification("จัดเรียงลำดับโครงการตามวันเริ่มและวันสิ้นสุดเรียบร้อยแล้ว");
     }
 
-    /* 🟢 RENDER GANTT CHART BOARD (ปรับปรุงลอจิกแถบสีเดือนตามปีงบประมาณ พ.ศ.) */
+    /* 🟢 RENDER GANTT CHART BOARD (แก้ไขลอจิกไฮไลต์แถบสีเดือนปีงบประมาณ พ.ศ. 100%) */
     function renderGanttBoard(shouldSort = false) {
       const tbody = document.getElementById('ganttTableBody');
       if (!allProjectsData || allProjectsData.length === 0) {
@@ -1757,7 +1789,7 @@
         
         const officerStyle = getOfficerStyle(item.officer_in_charge);
 
-        const fyMonthIndices = [9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8];
+        // ดัชนีเดือนปีงบประมาณไทย: 0=ต.ค., 1=พ.ย., 2=ธ.ค., 3=ม.ค., 4=ก.พ., 5=มี.ค., 6=เม.ย., 7=พ.ค., 8=มิ.ย., 9=ก.ค., 10=ส.ค., 11=ก.ย.
         const monthActiveFlags = Array(12).fill(false);
 
         const startDateObj = parseLocalDateStr(item.plan_start_date);
@@ -1767,21 +1799,27 @@
           const pStart = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate(), 0, 0, 0);
           const pEnd = new Date(endDateObj.getFullYear(), endDateObj.getMonth(), endDateObj.getDate(), 23, 59, 59);
 
-          let refYear = startDateObj.getFullYear();
+          // คำนวณปีงบประมาณ ค.ศ.
+          let targetFiscalYear = startDateObj.getFullYear();
+          if (startDateObj.getMonth() >= 9) { // เดือน ต.ค.-ธ.ค.
+            targetFiscalYear += 1;
+          }
           if (item.fiscal_year) {
             let fyNum = Number(item.fiscal_year);
             if (fyNum > 2400) fyNum -= 543;
-            refYear = fyNum;
+            if (!isNaN(fyNum)) targetFiscalYear = fyNum;
           }
 
+          const fyMonthIndices = [9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8];
+
           fyMonthIndices.forEach((mIdx, i) => {
-            let mYear = refYear;
+            let calYear = targetFiscalYear;
             if (mIdx >= 9) {
-              mYear = refYear - 1; // เดือน ต.ค.-ธ.ค. อยู่ในปี ค.ศ. ก่อนหน้าของปีงบฯ
+              calYear = targetFiscalYear - 1; // เดือน ต.ค.-ธ.ค. เป็น ค.ศ. ปีก่อนหน้า
             }
 
-            const mStart = new Date(mYear, mIdx, 1, 0, 0, 0);
-            const mEnd = new Date(mYear, mIdx + 1, 0, 23, 59, 59);
+            const mStart = new Date(calYear, mIdx, 1, 0, 0, 0);
+            const mEnd = new Date(calYear, mIdx + 1, 0, 23, 59, 59);
 
             if (pStart <= mEnd && pEnd >= mStart) {
               monthActiveFlags[i] = true;
@@ -1798,14 +1836,7 @@
           }
         });
 
-        const formatInputDate = (dObj) => {
-          if (!dObj) return '';
-          const y = dObj.getFullYear();
-          const m = String(dObj.getMonth() + 1).padStart(2, '0');
-          const d = String(dObj.getDate()).padStart(2, '0');
-          return `${y}-${m}-${d}`;
-        };
-
+        // 🟢 แปลงรูปแบบวันที่ ISO YYYY-MM-DD เพื่อให้ <input type="date"> อ่านค่าเข้า 100%
         const startDateValue = formatInputDate(startDateObj);
         const endDateValue = formatInputDate(endDateObj);
 
@@ -1868,7 +1899,7 @@
         renderGanttBoard(false);
       }
 
-      const userPasscode = sessionStorage.getItem('USER_PASSCODE') || '';
+      const userPasscode = getActivePasscode();
 
       try {
         const res = await fetch(GAS_API_URL, {
@@ -1944,13 +1975,16 @@
       
       const fields = [
         'id', 'fiscal_year', 'quarter', 'project_name', 'activity_detail', 'remarks', 'budget_amount', 
-        'moo_no', 'village_name', 'officer_in_charge', 'plan_start_date', 'plan_end_date', 
-        'work_group', 'budget_group', 'budget_category', 'budget_type', 'funding_source'
+        'moo_no', 'village_name', 'officer_in_charge', 'work_group', 'budget_group', 'budget_category', 'budget_type', 'funding_source'
       ];
       fields.forEach(f => {
         const el = document.getElementById(f);
         if (el) el.value = item[f] || '';
       });
+
+      document.getElementById('plan_start_date').value = formatInputDate(item.plan_start_date);
+      document.getElementById('plan_end_date').value = formatInputDate(item.plan_end_date);
+
       document.getElementById('initialModal').classList.remove('hidden');
       document.getElementById('initialModal').classList.add('flex');
     }
@@ -1958,7 +1992,7 @@
     // 🟢 PASSCODE GUARD FOR DELETE PROJECT
     async function confirmDeleteProject(projectId) {
       if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบโครงการนี้ออกจากระบบ?')) {
-        const userPasscode = sessionStorage.getItem('USER_PASSCODE') || '';
+        const userPasscode = getActivePasscode();
         try {
           const res = await fetch(GAS_API_URL, {
             method: 'POST',
@@ -1995,8 +2029,8 @@
       document.getElementById('vendor_name').value = item.vendor_name || '';
       document.getElementById('approved_amount').value = item.approved_amount || '';
       document.getElementById('disbursed_amount').value = item.disbursed_amount || '';
-      document.getElementById('contract_start_date').value = item.contract_start_date || '';
-      document.getElementById('contract_end_date').value = item.contract_end_date || '';
+      document.getElementById('contract_start_date').value = formatInputDate(item.contract_start_date);
+      document.getElementById('contract_end_date').value = formatInputDate(item.contract_end_date);
 
       document.getElementById('progressModal').classList.remove('hidden');
       document.getElementById('progressModal').classList.add('flex');
@@ -2039,7 +2073,7 @@
     // 🟢 PASSCODE GUARD FOR DELETE FILE
     async function deleteFile(fileId) {
       if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบไฟล์นี้จาก Google Drive?")) {
-        const userPasscode = sessionStorage.getItem('USER_PASSCODE') || '';
+        const userPasscode = getActivePasscode();
         try {
           const res = await fetch(GAS_API_URL, {
             method: 'POST',
@@ -2065,7 +2099,7 @@
       const formData = {};
       new FormData(form).forEach((value, key) => formData[key] = value);
 
-      const userPasscode = sessionStorage.getItem('USER_PASSCODE') || '';
+      const userPasscode = getActivePasscode();
 
       try {
         const res = await fetch(GAS_API_URL, {
@@ -2125,7 +2159,7 @@
       btnSubmit.disabled = true;
       btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>กำลังบันทึก...';
 
-      const userPasscode = sessionStorage.getItem('USER_PASSCODE') || '';
+      const userPasscode = getActivePasscode();
 
       try {
         const res = await fetch(GAS_API_URL, {
