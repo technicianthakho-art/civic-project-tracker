@@ -277,7 +277,7 @@
             <option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>
           </select>
 
-          <!-- 🟢 เพิ่มตัวกรองหมู่บ้าน/หมู่ที่ (Table View) -->
+          <!-- 🟢 ตัวกรองหมู่บ้าน/หมู่ที่ (Table View) -->
           <select id="filterVillage" onchange="filterTable()" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
             <option value="">-- ทุกหมู่บ้าน/หมู่ที่ --</option>
           </select>
@@ -351,7 +351,7 @@
             <select id="ganttFilterOfficer" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
               <option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>
             </select>
-            <!-- 🟢 เพิ่มตัวกรองหมู่บ้าน/หมู่ที่ (Gantt View) -->
+            <!-- 🟢 ตัวกรองหมู่บ้าน/หมู่ที่ (Gantt View) -->
             <select id="ganttFilterVillage" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
               <option value="">-- ทุกหมู่บ้าน/หมู่ที่ --</option>
             </select>
@@ -823,22 +823,23 @@
       return isNaN(parsed.getTime()) ? null : parsed;
     }
 
+    // 🟢 ปรับปรุงการคำนวณไตรมาส พ.ศ. ไทย 100%
     function calculateQuarterFromDates(startDateStr, endDateStr) {
       if (!startDateStr || !endDateStr) return '-';
       const start = parseLocalDateStr(startDateStr);
       const end = parseLocalDateStr(endDateStr);
       if (!start || !end) return '-';
 
-      const getQ = (dateObj) => {
-        const m = dateObj.getMonth() + 1;
-        if (m >= 10 && m <= 12) return 1;
-        if (m >= 1 && m <= 3) return 2;
-        if (m >= 4 && m <= 6) return 3;
-        return 4;
+      const getThaiFiscalQuarter = (dateObj) => {
+        const m = dateObj.getMonth() + 1; // 1-12
+        if (m >= 10 && m <= 12) return 1; // ต.ค. - ธ.ค.
+        if (m >= 1 && m <= 3) return 2;   // ม.ค. - มี.ค.
+        if (m >= 4 && m <= 6) return 3;   // เม.ย. - มิ.ย.
+        return 4;                        // ก.ค. - ก.ย.
       };
 
-      const qStart = getQ(start);
-      const qEnd = getQ(end);
+      const qStart = getThaiFiscalQuarter(start);
+      const qEnd = getThaiFiscalQuarter(end);
       if (qStart === qEnd) return `ไตรมาสที่ ${qStart}`;
       return `ไตรมาสที่ ${qStart}/${qEnd}`;
     }
@@ -890,6 +891,7 @@
       if (currentUserRole !== 'GUEST') {
         if (confirm("คุณต้องการออกจากระบบหรือไม่?")) {
           sessionStorage.removeItem('USER_ROLE');
+          sessionStorage.removeItem('USER_PASSCODE');
           currentUserRole = 'GUEST';
           updateAuthUI();
           showNotification("ออกจากระบบเรียบร้อยแล้ว");
@@ -924,6 +926,7 @@
         if (res.success) {
           currentUserRole = res.role;
           sessionStorage.setItem('USER_ROLE', res.role);
+          sessionStorage.setItem('USER_PASSCODE', passcode); // 🟢 เก็บ Passcode ไว้ใช้ยืนยันสิทธิ์ Server-side
           closeLoginModal();
           updateAuthUI();
           showNotification(res.message);
@@ -1113,7 +1116,6 @@
         
         updateOfficerFilterOptions(Array.from(officersSet));
         
-        // อัปเดตรายการหมู่บ้านเข้าตัวกรอง
         if (allProjectsData && allProjectsData.length > 0) {
           populateDynamicDropdownFilters(allProjectsData);
         } else {
@@ -1141,7 +1143,6 @@
     }
 
     function populateDynamicDropdownFilters(data) {
-      // 🟢 เติมตัวเลือก Dropdown หมู่บ้าน/หมู่ที่ จาก masterVillagesMap
       const villageSelects = ['filterVillage', 'ganttFilterVillage'];
       villageSelects.forEach(id => {
         const el = document.getElementById(id);
@@ -1687,7 +1688,7 @@
       showNotification("จัดเรียงลำดับโครงการตามวันเริ่มและวันสิ้นสุดเรียบร้อยแล้ว");
     }
 
-    /* RENDER GANTT CHART BOARD */
+    /* 🟢 RENDER GANTT CHART BOARD (ปรับปรุงลอจิกแถบสีเดือนตามปีงบประมาณ พ.ศ.) */
     function renderGanttBoard(shouldSort = false) {
       const tbody = document.getElementById('ganttTableBody');
       if (!allProjectsData || allProjectsData.length === 0) {
@@ -1766,14 +1767,17 @@
           const pStart = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate(), 0, 0, 0);
           const pEnd = new Date(endDateObj.getFullYear(), endDateObj.getMonth(), endDateObj.getDate(), 23, 59, 59);
 
-          const refYear = startDateObj.getFullYear();
+          let refYear = startDateObj.getFullYear();
+          if (item.fiscal_year) {
+            let fyNum = Number(item.fiscal_year);
+            if (fyNum > 2400) fyNum -= 543;
+            refYear = fyNum;
+          }
 
           fyMonthIndices.forEach((mIdx, i) => {
             let mYear = refYear;
-            if (mIdx < 9 && startDateObj.getMonth() >= 9) {
-              mYear = refYear + 1;
-            } else if (mIdx >= 9 && startDateObj.getMonth() < 9) {
-              mYear = refYear - 1;
+            if (mIdx >= 9) {
+              mYear = refYear - 1; // เดือน ต.ค.-ธ.ค. อยู่ในปี ค.ศ. ก่อนหน้าของปีงบฯ
             }
 
             const mStart = new Date(mYear, mIdx, 1, 0, 0, 0);
@@ -1846,6 +1850,7 @@
       tbody.innerHTML = html;
     }
 
+    // 🟢 PASSCODE GUARD FOR QUICK EDIT DATES
     async function quickUpdateGanttDates(projectId) {
       const startEl = document.getElementById(`gantt_start_${projectId}`);
       const endEl = document.getElementById(`gantt_end_${projectId}`);
@@ -1863,6 +1868,8 @@
         renderGanttBoard(false);
       }
 
+      const userPasscode = sessionStorage.getItem('USER_PASSCODE') || '';
+
       try {
         const res = await fetch(GAS_API_URL, {
           method: 'POST',
@@ -1870,7 +1877,8 @@
             action: 'UPDATE_PLAN_DATES',
             projectId: projectId,
             planStartDate: startDate,
-            planEndDate: endDate
+            planEndDate: endDate,
+            passcode: userPasscode
           })
         });
         const result = await res.json();
@@ -1947,12 +1955,14 @@
       document.getElementById('initialModal').classList.add('flex');
     }
 
+    // 🟢 PASSCODE GUARD FOR DELETE PROJECT
     async function confirmDeleteProject(projectId) {
       if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบโครงการนี้ออกจากระบบ?')) {
+        const userPasscode = sessionStorage.getItem('USER_PASSCODE') || '';
         try {
           const res = await fetch(GAS_API_URL, {
             method: 'POST',
-            body: JSON.stringify({ action: 'DELETE_PROJECT', projectId: projectId, userRole: currentUserRole })
+            body: JSON.stringify({ action: 'DELETE_PROJECT', projectId: projectId, userRole: currentUserRole, passcode: userPasscode })
           });
           const result = await res.json();
           if (result.success) {
@@ -2026,12 +2036,14 @@
       }
     }
 
+    // 🟢 PASSCODE GUARD FOR DELETE FILE
     async function deleteFile(fileId) {
       if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบไฟล์นี้จาก Google Drive?")) {
+        const userPasscode = sessionStorage.getItem('USER_PASSCODE') || '';
         try {
           const res = await fetch(GAS_API_URL, {
             method: 'POST',
-            body: JSON.stringify({ action: 'DELETE_FILE', fileId: fileId, userRole: currentUserRole })
+            body: JSON.stringify({ action: 'DELETE_FILE', fileId: fileId, userRole: currentUserRole, passcode: userPasscode })
           });
           const result = await res.json();
           if (result.success) {
@@ -2046,16 +2058,19 @@
       document.getElementById('progressModal').classList.add('hidden');
     }
 
+    // 🟢 PASSCODE GUARD FOR SAVE INITIAL
     async function submitInitialForm() {
       const form = document.getElementById('initialForm');
       if (!form.checkValidity()) { form.reportValidity(); return; }
       const formData = {};
       new FormData(form).forEach((value, key) => formData[key] = value);
 
+      const userPasscode = sessionStorage.getItem('USER_PASSCODE') || '';
+
       try {
         const res = await fetch(GAS_API_URL, {
           method: 'POST',
-          body: JSON.stringify({ action: 'SAVE_INITIAL', formData: formData })
+          body: JSON.stringify({ action: 'SAVE_INITIAL', formData: formData, passcode: userPasscode })
         });
         const result = await res.json();
         if (result.success) {
@@ -2066,6 +2081,7 @@
       } catch (err) { alert("เกิดข้อผิดพลาด: " + err.message); }
     }
 
+    // 🟢 PASSCODE GUARD FOR UPDATE PROGRESS
     async function submitProgressForm() {
       const form = document.getElementById('progressForm');
       const formData = {};
@@ -2109,10 +2125,12 @@
       btnSubmit.disabled = true;
       btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>กำลังบันทึก...';
 
+      const userPasscode = sessionStorage.getItem('USER_PASSCODE') || '';
+
       try {
         const res = await fetch(GAS_API_URL, {
           method: 'POST',
-          body: JSON.stringify({ action: 'UPDATE_PROGRESS', formData: formData, fileData: fileData })
+          body: JSON.stringify({ action: 'UPDATE_PROGRESS', formData: formData, fileData: fileData, passcode: userPasscode })
         });
         const result = await res.json();
         btnSubmit.disabled = false;
