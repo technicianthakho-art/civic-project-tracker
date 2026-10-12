@@ -112,7 +112,6 @@
 
     .drawer-slide { transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
 
-    /* ปรับช่อง Datepicker ใน Gantt ให้ไร้กรอบ สไตล์เนียนกับพื้นหลัง */
     .gantt-date-input {
       background-color: transparent !important;
       border: none !important;
@@ -263,7 +262,7 @@
       <!-- MAIN TABLE CONTAINER -->
       <div class="light-card rounded-xl p-3 space-y-3">
         
-        <!-- Filters Toolbar (เรียงในบรรทัดเดียวกันใช้ Flexbox + ความกว้างสมบูรณ์ตามตัวอักษร) -->
+        <!-- Filters Toolbar -->
         <div class="flex flex-wrap items-center gap-2">
           <div class="flex-1 min-w-[220px] relative">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
@@ -276,6 +275,11 @@
 
           <select id="filterOfficer" onchange="filterTable()" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
             <option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>
+          </select>
+
+          <!-- 🟢 เพิ่มตัวกรองหมู่บ้าน/หมู่ที่ (Table View) -->
+          <select id="filterVillage" onchange="filterTable()" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
+            <option value="">-- ทุกหมู่บ้าน/หมู่ที่ --</option>
           </select>
 
           <select id="filterBudgetCategory" onchange="filterTable()" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
@@ -346,6 +350,10 @@
             </select>
             <select id="ganttFilterOfficer" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
               <option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>
+            </select>
+            <!-- 🟢 เพิ่มตัวกรองหมู่บ้าน/หมู่ที่ (Gantt View) -->
+            <select id="ganttFilterVillage" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
+              <option value="">-- ทุกหมู่บ้าน/หมู่ที่ --</option>
             </select>
             <select id="ganttFilterCategory" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
               <option value="">-- ทุกหมวดรายจ่าย --</option>
@@ -804,11 +812,10 @@
       const str = String(dateStr).trim();
       if (str === '' || str === '-') return null;
 
-      // กรณี YYYY-MM-DD
       const parts = str.split('T')[0].split('-');
       if (parts.length === 3) {
         let year = Number(parts[0]);
-        if (year > 2400) year -= 543; // แปลงพ.ศ. เป็น ค.ศ.
+        if (year > 2400) year -= 543;
         return new Date(year, Number(parts[1]) - 1, Number(parts[2]));
       }
 
@@ -1105,6 +1112,13 @@
         }
         
         updateOfficerFilterOptions(Array.from(officersSet));
+        
+        // อัปเดตรายการหมู่บ้านเข้าตัวกรอง
+        if (allProjectsData && allProjectsData.length > 0) {
+          populateDynamicDropdownFilters(allProjectsData);
+        } else {
+          populateDynamicDropdownFilters([]);
+        }
       } catch (err) {
         console.error("Master Data Fetch Error:", err);
       }
@@ -1127,6 +1141,22 @@
     }
 
     function populateDynamicDropdownFilters(data) {
+      // 🟢 เติมตัวเลือก Dropdown หมู่บ้าน/หมู่ที่ จาก masterVillagesMap
+      const villageSelects = ['filterVillage', 'ganttFilterVillage'];
+      villageSelects.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          const val = el.value;
+          el.innerHTML = '<option value="">-- ทุกหมู่บ้าน/หมู่ที่ --</option>';
+          Object.keys(masterVillagesMap).sort((a, b) => Number(a) - Number(b)).forEach(moo => {
+            const vInfo = masterVillagesMap[moo];
+            const label = `หมู่ที่ ${moo} - ${vInfo.village || ''}`;
+            el.innerHTML += `<option value="${moo}">${label}</option>`;
+          });
+          el.value = val;
+        }
+      });
+
       const categorySelects = ['filterBudgetCategory', 'ganttFilterCategory'];
       const categories = [...new Set(data.map(p => p.budget_category).filter(c => c && c.trim() !== ''))];
       categorySelects.forEach(id => {
@@ -1193,7 +1223,6 @@
         updateMiniKpiCards(allProjectsData);
         filterTable();
 
-        // หากกำลังเปิด Tab Gantt ให้ Re-render ด้วย
         if (!document.getElementById('tab-content-gantt').classList.contains('hidden')) {
           renderGanttBoard(false);
         }
@@ -1658,7 +1687,7 @@
       showNotification("จัดเรียงลำดับโครงการตามวันเริ่มและวันสิ้นสุดเรียบร้อยแล้ว");
     }
 
-    /* RENDER GANTT CHART BOARD (ปรับปรุงระบบเรียง 2 ชั้น & คำนวณแถบสีเดือน + ป้ายหมายเหตุ) */
+    /* RENDER GANTT CHART BOARD */
     function renderGanttBoard(shouldSort = false) {
       const tbody = document.getElementById('ganttTableBody');
       if (!allProjectsData || allProjectsData.length === 0) {
@@ -1668,6 +1697,7 @@
 
       const fyFilter = document.getElementById('ganttFilterFy').value;
       const officerFilter = document.getElementById('ganttFilterOfficer').value;
+      const villageFilter = document.getElementById('ganttFilterVillage') ? document.getElementById('ganttFilterVillage').value : '';
       const categoryFilter = document.getElementById('ganttFilterCategory').value;
       const fundingFilter = document.getElementById('ganttFilterFunding').value;
       const statusFilter = document.getElementById('ganttFilterStatus').value;
@@ -1676,6 +1706,7 @@
       let filteredData = allProjectsData.filter(p => {
         const matchFy = fyFilter === "" || String(p.fiscal_year) === fyFilter;
         const matchOfficer = officerFilter === "" || String(p.officer_in_charge || '').trim() === officerFilter.trim();
+        const matchVillage = villageFilter === "" || String(p.moo_no || '').trim() === villageFilter.trim();
         const matchCategory = categoryFilter === "" || String(p.budget_category || '') === categoryFilter;
         const matchFunding = fundingFilter === "" || String(p.funding_source || '') === fundingFilter;
         const matchRemarks = remarksFilter === "" || String(p.remarks || '').trim() === remarksFilter.trim();
@@ -1687,7 +1718,7 @@
         else if (statusFilter === "CONTRACT") matchStatus = evalRes.isContractActive;
         else if (statusFilter === "COMPLETED") matchStatus = evalRes.isCompleted;
 
-        return matchFy && matchOfficer && matchCategory && matchFunding && matchStatus && matchRemarks;
+        return matchFy && matchOfficer && matchVillage && matchCategory && matchFunding && matchStatus && matchRemarks;
       });
 
       if (shouldSort) {
@@ -1725,7 +1756,6 @@
         
         const officerStyle = getOfficerStyle(item.officer_in_charge);
 
-        // เดือนปีงบประมาณไทย: ต.ค.(9), พ.ย.(10), ธ.ค.(11), ม.ค.(0), ก.พ.(1), มี.ค.(2), เม.ย.(3), พ.ค.(4), มิ.ย.(5), ก.ค.(6), ส.ค.(7), ก.ย.(8)
         const fyMonthIndices = [9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8];
         const monthActiveFlags = Array(12).fill(false);
 
@@ -1736,16 +1766,14 @@
           const pStart = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate(), 0, 0, 0);
           const pEnd = new Date(endDateObj.getFullYear(), endDateObj.getMonth(), endDateObj.getDate(), 23, 59, 59);
 
-          // หาปี ค.ศ. หลักของโครงการจากวันเริ่มแผน
           const refYear = startDateObj.getFullYear();
 
           fyMonthIndices.forEach((mIdx, i) => {
-            // หากเป็น ต.ค.-ธ.ค. (9-11) และวันเริ่มงานตกในปีงบฯ นั้น ให้คำนวณปี ค.ศ. ให้ถูกต้อง
             let mYear = refYear;
             if (mIdx < 9 && startDateObj.getMonth() >= 9) {
-              mYear = refYear + 1; // สลับไปปีถัดไป เช่น ม.ค.
+              mYear = refYear + 1;
             } else if (mIdx >= 9 && startDateObj.getMonth() < 9) {
-              mYear = refYear - 1; // ถอยไปปีก่อนหน้า เช่น ต.ค.
+              mYear = refYear - 1;
             }
 
             const mStart = new Date(mYear, mIdx, 1, 0, 0, 0);
@@ -1766,7 +1794,6 @@
           }
         });
 
-        // แปลงรูปแบบวันที่สำหรับใส่ใน `<input type="date">`
         const formatInputDate = (dObj) => {
           if (!dObj) return '';
           const y = dObj.getFullYear();
@@ -1778,7 +1805,6 @@
         const startDateValue = formatInputDate(startDateObj);
         const endDateValue = formatInputDate(endDateObj);
 
-        // แสดงผล Tag หมายเหตุ (รูปที่ 2)
         const remarksTag = item.remarks && item.remarks.trim() !== '' 
           ? `<span class="mt-1 px-1.5 py-0.5 rounded bg-amber-100/90 text-amber-900 border border-amber-300 font-extrabold text-[10px] inline-flex items-center gap-1"><i class="fa-solid fa-tag text-amber-700"></i>${item.remarks}</span>` 
           : '';
@@ -1830,7 +1856,6 @@
 
       if (!startDate || !endDate) return;
 
-      // อัปเดตข้อมูลฝั่ง Client ทันทีเพื่อความลื่นไหล
       const targetItem = allProjectsData.find(p => String(p.id) === String(projectId));
       if (targetItem) {
         targetItem.plan_start_date = startDate;
@@ -2118,6 +2143,7 @@
       const kw = (document.getElementById('searchInput').value || '').toLowerCase().trim();
       const fy = document.getElementById('filterFiscalYear').value;
       const officer = document.getElementById('filterOfficer').value;
+      const village = document.getElementById('filterVillage') ? document.getElementById('filterVillage').value : '';
       const remarksVal = document.getElementById('filterRemarks').value;
       const cat = document.getElementById('filterBudgetCategory').value;
       const status = document.getElementById('filterStatus').value;
@@ -2133,6 +2159,7 @@
                         
         const matchFy = fy === "" || String(item.fiscal_year) === fy;
         const matchOfficer = officer === "" || String(item.officer_in_charge || '').trim() === officer.trim();
+        const matchVillage = village === "" || String(item.moo_no || '').trim() === village.trim();
         const matchRemarks = remarksVal === "" || String(item.remarks || '').trim() === remarksVal.trim();
         const matchCat = cat === "" || String(item.budget_category || '') === cat;
         
@@ -2144,7 +2171,7 @@
         else if (status === "CONTRACT") matchStatus = evalRes.isContractActive;
         else if (status === "COMPLETED") matchStatus = evalRes.isCompleted;
 
-        return matchKw && matchFy && matchOfficer && matchRemarks && matchCat && matchStatus;
+        return matchKw && matchFy && matchOfficer && matchVillage && matchRemarks && matchCat && matchStatus;
       });
 
       renderTable(filtered);
