@@ -112,22 +112,26 @@
 
     .drawer-slide { transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
 
+    /* Modern Rounded Date Picker Frame */
     .gantt-date-input {
-      background-color: transparent !important;
+      background-color: #ffffff !important;
       border: 1px solid #cbd5e1 !important;
-      border-radius: 6px !important;
-      padding: 2px 4px !important;
+      border-radius: 8px !important;
+      padding: 3px 6px !important;
       outline: none !important;
-      box-shadow: none !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
       cursor: pointer;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      color: #0f172a !important;
     }
     .gantt-date-input:focus {
       border-color: #0284c7 !important;
-      background-color: #ffffff !important;
+      ring: 2px #bae6fd !important;
     }
     .gantt-date-input::-webkit-calendar-picker-indicator {
       cursor: pointer;
-      opacity: 0.7;
+      opacity: 0.6;
     }
     .gantt-date-input::-webkit-calendar-picker-indicator:hover {
       opacity: 1;
@@ -283,7 +287,6 @@
             <option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>
           </select>
 
-          <!-- ตัวกรองหมู่บ้าน/หมู่ที่ (Table View) -->
           <select id="filterVillage" onchange="filterTable()" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-extrabold focus:outline-none focus:border-sky-600">
             <option value="">-- ทุกหมู่บ้าน/หมู่ที่ --</option>
           </select>
@@ -357,7 +360,6 @@
             <select id="ganttFilterOfficer" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
               <option value="">-- ช่างผู้รับผิดชอบทั้งหมด --</option>
             </select>
-            <!-- ตัวกรองหมู่บ้าน/หมู่ที่ (Gantt View) -->
             <select id="ganttFilterVillage" onchange="renderGanttBoard(false)" class="w-auto min-w-fit bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-sky-700 font-extrabold focus:outline-none">
               <option value="">-- ทุกหมู่บ้าน/หมู่ที่ --</option>
             </select>
@@ -811,7 +813,7 @@
       return { bg: '#cbd5e1', text: '#0f172a' };
     }
 
-    // 🟢 UTILITY PARSE DATE: รองรับการแปลงปี พ.ศ. คืนค่าเป็น Date Object แม่นยำ
+    // 🟢 UTILITY PARSE DATE: รองรับการแปลงปี พ.ศ. และ ISO String แม่นยำ 100%
     function parseLocalDateStr(dateStr) {
       if (!dateStr) return null;
       if (dateStr instanceof Date) return isNaN(dateStr.getTime()) ? null : dateStr;
@@ -819,7 +821,6 @@
       const str = String(dateStr).trim();
       if (str === '' || str === '-') return null;
 
-      // กรณีส่งมาเป็นรูปแบบ ISO YYYY-MM-DD
       const parts = str.split('T')[0].split('-');
       if (parts.length === 3) {
         let year = Number(parts[0]);
@@ -847,7 +848,6 @@
       return `${y}-${m}-${d}`;
     }
 
-    // 🟢 ปรับปรุงการคำนวณไตรมาส พ.ศ. ไทย 100%
     function calculateQuarterFromDates(startDateStr, endDateStr) {
       if (!startDateStr || !endDateStr) return '-';
       const start = parseLocalDateStr(startDateStr);
@@ -1720,7 +1720,7 @@
       showNotification("จัดเรียงลำดับโครงการตามวันเริ่มและวันสิ้นสุดเรียบร้อยแล้ว");
     }
 
-    /* 🟢 RENDER GANTT CHART BOARD (แก้ไขลอจิกไฮไลต์แถบสีเดือนปีงบประมาณ พ.ศ. 100%) */
+    /* 🟢 RENDER GANTT CHART BOARD (DYNAMIC FISCAL AUTO-CALCULATE LOGIC) */
     function renderGanttBoard(shouldSort = false) {
       const tbody = document.getElementById('ganttTableBody');
       if (!allProjectsData || allProjectsData.length === 0) {
@@ -1786,10 +1786,9 @@
         const rowNum = idx + 1;
         const quarterStr = calculateQuarterFromDates(item.plan_start_date, item.plan_end_date);
         const budgetFormatted = Number(item.budget_amount || 0).toLocaleString('th-TH');
-        
         const officerStyle = getOfficerStyle(item.officer_in_charge);
 
-        // ดัชนีเดือนปีงบประมาณไทย: 0=ต.ค., 1=พ.ย., 2=ธ.ค., 3=ม.ค., 4=ก.พ., 5=มี.ค., 6=เม.ย., 7=พ.ค., 8=มิ.ย., 9=ก.ค., 10=ส.ค., 11=ก.ย.
+        // ดัชนี 12 เดือนปีงบประมาณไทย: 0=ต.ค., 1=พ.ย., ..., 11=ก.ย.
         const monthActiveFlags = Array(12).fill(false);
 
         const startDateObj = parseLocalDateStr(item.plan_start_date);
@@ -1799,15 +1798,10 @@
           const pStart = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate(), 0, 0, 0);
           const pEnd = new Date(endDateObj.getFullYear(), endDateObj.getMonth(), endDateObj.getDate(), 23, 59, 59);
 
-          // คำนวณปีงบประมาณ ค.ศ.
+          // 🟢 DYNAMIC AUTO-CALCULATE FISCAL YEAR FROM START DATE
           let targetFiscalYear = startDateObj.getFullYear();
-          if (startDateObj.getMonth() >= 9) { // เดือน ต.ค.-ธ.ค.
+          if (startDateObj.getMonth() >= 9) { // เดือน ต.ค.(9), พ.ย.(10), ธ.ค.(11) -> อยู่ในรอบปีงบประมาณ ค.ศ. ถัดไป
             targetFiscalYear += 1;
-          }
-          if (item.fiscal_year) {
-            let fyNum = Number(item.fiscal_year);
-            if (fyNum > 2400) fyNum -= 543;
-            if (!isNaN(fyNum)) targetFiscalYear = fyNum;
           }
 
           const fyMonthIndices = [9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8];
@@ -1815,7 +1809,7 @@
           fyMonthIndices.forEach((mIdx, i) => {
             let calYear = targetFiscalYear;
             if (mIdx >= 9) {
-              calYear = targetFiscalYear - 1; // เดือน ต.ค.-ธ.ค. เป็น ค.ศ. ปีก่อนหน้า
+              calYear = targetFiscalYear - 1; // ต.ค. - ธ.ค. ตรงกับ ค.ศ. ปีก่อนหน้า
             }
 
             const mStart = new Date(calYear, mIdx, 1, 0, 0, 0);
@@ -1836,7 +1830,7 @@
           }
         });
 
-        // 🟢 แปลงรูปแบบวันที่ ISO YYYY-MM-DD เพื่อให้ <input type="date"> อ่านค่าเข้า 100%
+        // 🟢 คง Date Frame รูปปฏิทินที่อ่านค่า ISO `YYYY-MM-DD` 100%
         const startDateValue = formatInputDate(startDateObj);
         const endDateValue = formatInputDate(endDateObj);
 
@@ -1881,7 +1875,6 @@
       tbody.innerHTML = html;
     }
 
-    // 🟢 PASSCODE GUARD FOR QUICK EDIT DATES
     async function quickUpdateGanttDates(projectId) {
       const startEl = document.getElementById(`gantt_start_${projectId}`);
       const endEl = document.getElementById(`gantt_end_${projectId}`);
@@ -1989,7 +1982,6 @@
       document.getElementById('initialModal').classList.add('flex');
     }
 
-    // 🟢 PASSCODE GUARD FOR DELETE PROJECT
     async function confirmDeleteProject(projectId) {
       if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบโครงการนี้ออกจากระบบ?')) {
         const userPasscode = getActivePasscode();
@@ -2070,7 +2062,6 @@
       }
     }
 
-    // 🟢 PASSCODE GUARD FOR DELETE FILE
     async function deleteFile(fileId) {
       if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบไฟล์นี้จาก Google Drive?")) {
         const userPasscode = getActivePasscode();
@@ -2092,7 +2083,6 @@
       document.getElementById('progressModal').classList.add('hidden');
     }
 
-    // 🟢 PASSCODE GUARD FOR SAVE INITIAL
     async function submitInitialForm() {
       const form = document.getElementById('initialForm');
       if (!form.checkValidity()) { form.reportValidity(); return; }
@@ -2115,7 +2105,6 @@
       } catch (err) { alert("เกิดข้อผิดพลาด: " + err.message); }
     }
 
-    // 🟢 PASSCODE GUARD FOR UPDATE PROGRESS
     async function submitProgressForm() {
       const form = document.getElementById('progressForm');
       const formData = {};
